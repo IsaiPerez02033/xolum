@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.11.25)  25 MAR 2026 22:38
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.11.25)  26 MAR 2026 00:37
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -592,7 +592,8 @@ File: pgfsyssoftpath.code.tex 2023-01-15 v3.1.10 (3.1.10)
 File: pgfsysprotocol.code.tex 2023-01-15 v3.1.10 (3.1.10)
 ))
 Package hyperref Info: Option `colorlinks' set `true' on input line 39.
- (main.aux)
+
+No file main.aux.
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 72.
@@ -615,7 +616,6 @@ LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 72.
 LaTeX Font Info:    ... okay on input line 72.
 LaTeX Info: Redefining \. on input line 72.
 LaTeX Info: Redefining \% on input line 72.
-
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -723,7 +723,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 LaTeX Warning: Reference `fig:flujo' on page 4 undefined on input line 207.
 
 
-c:/Users/damia/Documents/Proyectos/Xolum/Xolum/Doc/main.tex:211: Package svg Error: File `susvi_decision_logic_pipeline.svg' is missing.
+Package svg Warning: You didn't enable `shell escape' (or `write18')
+(svg)                so it wasn't possible to launch the Inkscape export
+(svg)                for `susvi_decision_logic_pipeline.svg' on input line 211.
+
+
+c:/Users/damia/Documents/Proyectos/Xolum/Xolum/Doc/main.tex:211: Package svg Error: File `susvi_decision_logic_pipeline_svg-tex.pdf' is missing.
 
 See the svg package documentation for explanation.
 Type  H <return>  for immediate help.
@@ -731,10 +736,22 @@ Type  H <return>  for immediate help.
                                                   
 l.211 ...width]{susvi_decision_logic_pipeline.svg}
                                                   
-There's no file `susvi_decision_logic_pipeline.svg'
-neither in the current directory nor any other searched
-path given by \svgpath or \graphicspath.
-No additional path was given.
+Did you run the export with Inkscape? There's no file
+`./svg-inkscape/susvi_decision_logic_pipeline_svg-tex.pdf'
+although `susvi_decision_logic_pipeline.svg' was found.
+
+
+c:/Users/damia/Documents/Proyectos/Xolum/Xolum/Doc/main.tex:211: Package svg Error: File `susvi_decision_logic_pipeline_svg-tex.pdf_tex' is missing.
+
+See the svg package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.211 ...width]{susvi_decision_logic_pipeline.svg}
+                                                  
+Did you run the export with Inkscape? There's no file
+`./svg-inkscape/susvi_decision_logic_pipeline_svg-tex.pdf_tex'
+although `susvi_decision_logic_pipeline.svg' was found.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -881,7 +898,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 [15]
 
-c:/Users/damia/Documents/Proyectos/Xolum/Xolum/Doc/main.tex:596: Package svg Error: File `susvi_architecture_stack.svg' is missing.
+Package svg Warning: You didn't enable `shell escape' (or `write18')
+(svg)                so it wasn't possible to launch the Inkscape export
+(svg)                for `susvi_architecture_stack.svg' on input line 596.
+
+
+c:/Users/damia/Documents/Proyectos/Xolum/Xolum/Doc/main.tex:596: Package svg Error: File `susvi_architecture_stack_svg-tex.pdf' is missing.
 
 See the svg package documentation for explanation.
 Type  H <return>  for immediate help.
@@ -889,10 +911,22 @@ Type  H <return>  for immediate help.
                                                   
 l.596 ...\textwidth]{susvi_architecture_stack.svg}
                                                   
-There's no file `susvi_architecture_stack.svg'
-neither in the current directory nor any other searched
-path given by \svgpath or \graphicspath.
-No additional path was given.
+Did you run the export with Inkscape? There's no file
+`./svg-inkscape/susvi_architecture_stack_svg-tex.pdf'
+although `susvi_architecture_stack.svg' was found.
+
+
+c:/Users/damia/Documents/Proyectos/Xolum/Xolum/Doc/main.tex:596: Package svg Error: File `susvi_architecture_stack_svg-tex.pdf_tex' is missing.
+
+See the svg package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.596 ...\textwidth]{susvi_architecture_stack.svg}
+                                                  
+Did you run the export with Inkscape? There's no file
+`./svg-inkscape/susvi_architecture_stack_svg-tex.pdf_tex'
+although `susvi_architecture_stack.svg' was found.
 
 
 Underfull \hbox (badness 6220) in paragraph at lines 612--612
@@ -990,10 +1024,10 @@ Package rerunfilecheck Info: Checksums for `main.out':
 (rerunfilecheck)             After:  C4DB9EB5A52B98C10D6B06F12EDEF43D;9444.
  ) 
 Here is how much of TeX's memory you used:
- 17436 strings out of 474486
- 295590 string characters out of 5753569
+ 17443 strings out of 474486
+ 296081 string characters out of 5753569
  1938542 words of memory out of 5000000
- 39317 multiletter control sequences out of 15000+600000
+ 39326 multiletter control sequences out of 15000+600000
  572443 words of font info for 66 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  94i,13n,93p,1184b,670s stack positions out of 10000i,1000n,20000p,200000b,200000s

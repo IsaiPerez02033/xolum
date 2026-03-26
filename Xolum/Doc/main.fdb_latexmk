@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1774499896.04648 "c:/Users/damia/Documents/Proyectos/Xolum/Xolum/Doc/main.tex" "main.pdf" "main" 1774499897.18143 2
+["pdflatex"] 1774507064.56039 "c:/Users/damia/Documents/Proyectos/Xolum/Xolum/Doc/main.tex" "main.pdf" "main" 1774507065.59871 2
   "C:/Program Files/MiKTeX/fonts/tfm/jknappen/ec/ecbx1095.tfm" 993061956 3228 aacd2ac2d814480e4422ad7e830fd2d4 ""
   "C:/Program Files/MiKTeX/fonts/tfm/jknappen/ec/ecbx1200.tfm" 993061958 3200 b8d69bc738e5ef3e08cefeef3109ff56 ""
   "C:/Program Files/MiKTeX/fonts/tfm/jknappen/ec/ecbx1440.tfm" 993061960 3196 0b37fa3083e15c57cfa8c4ff52f2807a ""
@@ -153,10 +153,12 @@
   "C:/Users/damia/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1764105161 24215232 ed865de556dc397b7350c604c9ad1db8 ""
   "c:/Users/damia/Documents/Proyectos/Xolum/Xolum/Doc/main.tex" 1774499883 42573 e520cb5b16a4c8a788f41999299d7f90 ""
   "logo.png" 1774473517 116008 45dcee585c7fe4646bf650b312a600ac ""
-  "main.aux" 1774499896 7633 585833834a4f05f31f27ee6e864a53aa "pdflatex"
-  "main.out" 1774499896 9444 c4db9eb5a52b98c10d6b06f12edef43d "pdflatex"
+  "main.aux" 1774507065 7633 585833834a4f05f31f27ee6e864a53aa "pdflatex"
+  "main.out" 1774507065 9444 c4db9eb5a52b98c10d6b06f12edef43d "pdflatex"
   "main.tex" 1774499883 42573 e520cb5b16a4c8a788f41999299d7f90 ""
-  "main.toc" 1774499896 4432 e25515dfaf9d08b62ab0e7172e2e4b8d "pdflatex"
+  "main.toc" 1774507065 4432 e25515dfaf9d08b62ab0e7172e2e4b8d "pdflatex"
+  "susvi_architecture_stack.svg" 1774504849 36703 e0814491732e157f4cc0183a1b9cbd63 ""
+  "susvi_decision_logic_pipeline.svg" 1774507055 23769 47268a6de7251a3dfc18826de99a59fa ""
   (generated)
   "main.aux"
   "main.log"
