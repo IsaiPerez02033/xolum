@@ -1,0 +1,47 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}Información General del Proyecto}{2}{section.1}%
+\contentsline {section}{\numberline {2}Descripción de la Problemática}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Contexto general}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Diagnóstico en cifras}{2}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Inseguridad peatonal}{2}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Iluminación pública deficiente}{2}{subsubsection.2.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.3}Déficit de áreas verdes}{3}{subsubsection.2.2.3}%
+\contentsline {subsubsection}{\numberline {2.2.4}Videovigilancia fragmentada}{3}{subsubsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.3}El problema de fondo: planificación fragmentada}{3}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Descripción de la Solución Propuesta}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}¿Qué es SUSVI?}{4}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}¿Cómo funciona?}{4}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Paso 1 — Ingesta de datos reales}{4}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Paso 2 — Diagnóstico de la zona con Watsonx}{5}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Paso 3 — Generación de propuestas con IA generativa}{5}{subsubsection.3.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.4}Paso 4 — Resolución de conflictos entre capas}{6}{subsubsection.3.2.4}%
+\contentsline {subsubsection}{\numberline {3.2.5}Paso 5 — Generación del plano integral}{6}{subsubsection.3.2.5}%
+\contentsline {subsection}{\numberline {3.3}Ejemplo ilustrativo: SUSVI aplicado a una zona tipo}{6}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Alto Impacto}{8}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Relación con el track}{8}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Población beneficiada}{8}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}Zonas objetivo: criterios de selección}{8}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}Alcance del impacto}{9}{subsubsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.3}Alineación con los ODS}{10}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Innovación y Creatividad}{10}{section.5}%
+\contentsline {subsection}{\numberline {5.1}¿Qué hace a SUSVI novedoso?}{10}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}¿Cómo se hace hoy y por qué no funciona?}{10}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Diferenciadores frente a soluciones existentes}{11}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Uso innovador de IA generativa}{12}{subsection.5.4}%
+\contentsline {section}{\numberline {6}Escalabilidad}{12}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Diseño escalable desde el origen}{12}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}Escalabilidad geográfica}{13}{subsubsection.6.1.1}%
+\contentsline {subsubsection}{\numberline {6.1.2}Escalabilidad funcional}{13}{subsubsection.6.1.2}%
+\contentsline {subsubsection}{\numberline {6.1.3}Escalabilidad técnica}{13}{subsubsection.6.1.3}%
+\contentsline {section}{\numberline {7}Viabilidad}{13}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Viabilidad tecnológica}{14}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Viabilidad de datos}{14}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Presupuesto estimado del prototipo}{15}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Riesgos identificados y mitigación}{15}{subsection.7.4}%
+\contentsline {section}{\numberline {8}Mérito Técnico}{15}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Arquitectura del sistema}{16}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Aprovechamiento de las herramientas IBM}{16}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Cálculos técnicos integrados}{17}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}Documentación técnica}{17}{subsection.8.4}%
+\contentsline {section}{\numberline {9}Conclusión}{18}{section.9}%
+\contentsline {section}{\numberline {10}Referencias}{19}{section.10}%
