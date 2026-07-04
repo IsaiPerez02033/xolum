@@ -81,16 +81,10 @@
     \vspace*{1.5cm}
 
     % ── LOGO ──
-    % INSTRUCCIÓN: Carga tu logo "logo_xolum.png" en Overleaf
-    % (botón Upload en el panel izquierdo).
-    % El comando \includegraphics usa decodearray para eliminar
-    % automáticamente el fondo blanco de la imagen.
-    % ────────────────────────────────────────────────────────
+    % El logo tiene fondo transparente (RGBA).
+    % Si no compila, sube el archivo "logo_xolum.png" a Overleaf.
     \IfFileExists{logo_xolum.png}{%
-        \includegraphics[
-            width=0.35\textwidth,
-            decodearray={1 1 1 0 0 0}  % Elimina fondo blanco → transparente
-        ]{logo_xolum.png}
+        \includegraphics[width=0.35\textwidth]{logo_xolum.png}
     }{%
         \begin{picture}(80,25)
             \put(0,0){\color{bordergrey}\framebox(80,25){\color{accentblue}\Large\bfseries{}XOLUM}}
