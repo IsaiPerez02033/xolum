@@ -1,0 +1,186 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{
+  a4paper,
+  left=25mm,
+  right=25mm,
+  top=30mm,
+  bottom=30mm,
+  headheight=15pt
+}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+
+% ---- CONFIGURACIÓN DE COLORES (MODO OSCURO PREMIUM) ----
+\definecolor{bgblack}{HTML}{09090B}       % Negro profundo premium
+\definecolor{cardbg}{HTML}{18181B}        % Gris oscuro para tarjetas
+\definecolor{accentblue}{HTML}{007ACC}    % Azul VS Code / Sello de Zapata
+\definecolor{textwhite}{HTML}{F4F4F5}     % Blanco suave para lectura
+\definecolor{bordergrey}{HTML}{27272A}    % Borde gris sutil
+
+\pagecolor{bgblack}
+\color{textwhite}
+
+% ---- LINKS VISIBLES EN FONDO OSCURO ----
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accentblue,
+    urlcolor=accentblue,
+    citecolor=accentblue
+}
+
+% ---- ESTILOS DE SECCIONES ----
+\titleformat{\section}
+  {\color{accentblue}\normalfont\Large\bfseries\uppercase}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\color{textwhite}\normalfont\large\bfseries}
+  {\thesubsection}{1em}{}
+
+% ---- CAJAS DESTACADAS ----
+\newtcolorbox{tarjeta}[1][]{
+  colback=cardbg,
+  colframe=bordergrey,
+  arc=3mm,
+  boxrule=1px,
+  left=15px,
+  right=15px,
+  top=12px,
+  bottom=12px,
+  title=\uppercase{#1},
+  coltitle=accentblue,
+  fonttitle=\bfseries\small,
+  attach title to upper,
+  after title={\par\medskip}
+}
+
+% ---- CABECERA Y PIE DE PÁGINA ----
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\color{textwhite}\small PROPUESTA DIGITAL}
+\lhead{\color{accentblue}\small XOLUM}
+\rfoot{\color{textwhite}\thepage}
+\lfoot{\color{textwhite}\small Los Bigotes de Zapata}
+
+\setlength{\unitlength}{1mm}
+
+\begin{document}
+
+% ==========================================
+% PÁGINA DE PORTADA
+% ==========================================
+\thispagestyle{empty}
+\begin{center}
+    \vspace*{1.5cm}
+
+    % ── LOGO ──
+    % INSTRUCCIÓN: Carga tu logo "logo_xolum.png" en Overleaf
+    % (botón Upload en el panel izquierdo).
+    % El comando \includegraphics usa decodearray para eliminar
+    % automáticamente el fondo blanco de la imagen.
+    % ────────────────────────────────────────────────────────
+    \IfFileExists{logo_xolum.png}{%
+        \includegraphics[
+            width=0.35\textwidth,
+            decodearray={1 1 1 0 0 0}  % Elimina fondo blanco → transparente
+        ]{logo_xolum.png}
+    }{%
+        \begin{picture}(80,25)
+            \put(0,0){\color{bordergrey}\framebox(80,25){\color{accentblue}\Large\bfseries{}XOLUM}}
+        \end{picture}
+    }
+
+    \vspace*{1.5cm}
+
+    {\Huge\bfseries\color{textwhite} PROPUESTA DIGITAL} \\[0.3cm]
+    {\Large\bfseries\color{accentblue} EXPERIENCIA WEB EXCLUSIVA}
+
+    \vspace*{1.5cm}
+
+    \begin{tarjeta}[Los Bigotes de Zapata]
+        Una plataforma diseñada para atraer más clientes, destacar de la competencia y consolidar el prestigio de tu marca en internet.
+    \end{tarjeta}
+
+    \vfill
+
+    {\large Presentado por} \\[0.2cm]
+    {\Large\bfseries\color{accentblue} XOLUM} \\[0.5cm]
+    \small Estado de México, 2026
+\end{center}
+
+\newpage
+
+% ==========================================
+% 1. TU BARBERÍA EN SU MEJOR VERSIÓN
+% ==========================================
+\section{1. Tu Barbería, en su Mejor Versión}
+Ir a cortarse el cabello o perfilarse la barba es un ritual. En \textbf{XOLUM} creemos que la experiencia de visitar \textbf{Los Bigotes de Zapata} debe comenzar desde el instante en que un cliente busca tu barbería en su teléfono móvil.
+
+Hemos diseñado esta propuesta web con un único objetivo: \textbf{atraer, convencer y fidelizar}. A través de un diseño visual premium y dinámico, logramos transmitir el verdadero ambiente de tus sucursales: una mezcla perfecta entre el respeto por el afeitado clásico y la energía de la música urbana moderna.
+
+\begin{tarjeta}[¿Qué es este sitio de demostración?]
+    Hemos creado una demo interactiva real para que puedas navegar, hacer clic y experimentar en tu propio teléfono cómo se verá y se sentirá tu sitio web definitivo antes de lanzarlo al público.
+\end{tarjeta}
+
+\vspace*{0.3cm}
+
+% ==========================================
+% 2. LA EXPERIENCIA DEL CLIENTE EN LA WEB
+% ==========================================
+\section{2. ¿Cómo enamoramos a tu cliente en la web?}
+El sitio está diseñado para enganchar visualmente al usuario a través de detalles interactivos únicos:
+
+\begin{itemize}[label=\color{accentblue}\tiny$\blacksquare$]
+    \item \textbf{Menú en Forma de Navaja:} Al entrar, la barra de navegación del sitio tiene la silueta icónica de una navaja clásica de barbero, con tu logo integrado. Es un detalle original que genera identidad de marca inmediata.
+
+    \item \textbf{Recorrido Visual Animado:} A medida que el usuario se desplaza (scroll) por la página, se despliega una secuencia de videos profesionales que muestran el arte del afeitado y el corte. Es envolvente y abre el apetito por un buen servicio.
+
+    \item \textbf{Selección de Barberos tipo "Videojuego":} Los clientes pueden conocer a tu equipo de trabajo de forma divertida, interactuando con las siluetas de los barberos bajo una luz de escenario clásica.
+
+    \item \textbf{Tu ambiente en primer plano:} Una sección dedicada a lo que te hace diferente: tus estrictos protocolos de higiene, tus cortes de tendencia urbana y la cerveza de cortesía que ofreces para consentir a tus clientes en su visita.
+
+    \item \textbf{Ubicador Inteligente:} Facilita que los clientes encuentren al instante la dirección, los horarios y las opiniones en Google de tus sucursales de \textbf{Teoloyucan} y \textbf{Coyotepec} con un solo clic.
+\end{itemize}
+
+\newpage
+
+% ==========================================
+% 3. CRECIMIENTO Y ESCALABILIDAD
+% ==========================================
+\section{3. ¿Hacia dónde podemos crecer tu negocio?}
+Esta propuesta digital no es solo un folleto en línea; es el motor de tu negocio. El sitio web está preparado para crecer a tu ritmo e integrar funciones comerciales clave cuando estés listo:
+
+\begin{tarjeta}[1. Agenda de Citas en Línea (Tus horas siempre llenas)]
+    Permite que tus clientes agenden su cita, elijan a su barbero favorito y seleccionen el horario disponible de forma automática las 24 horas del día, reduciendo llamadas y mensajes de texto.
+\end{tarjeta}
+
+\begin{tarjeta}[2. Venta de Productos Oficiales (Vende mientras duermes)]
+    Una tienda en línea integrada para que vendas tu pomada y aceite oficial Zapata a nivel local y nacional, automatizando los pedidos directo a tu inventario.
+\end{tarjeta}
+
+\begin{tarjeta}[3. Inscripciones a Cursos de Barbería]
+    Módulo para promocionar e inscribir a estudiantes a tu academia de capacitación, permitiéndoles descargar el temario y asegurar su lugar mediante pagos digitales.
+\end{tarjeta}
+
+\vspace*{0.3cm}
+
+% ==========================================
+% 4. EL RESPALDO DE XOLUM
+% ==========================================
+\section{4. El Respaldo de XOLUM}
+Al trabajar con nosotros, te aseguras de tener una plataforma de nivel profesional:
+
+\begin{itemize}[label=\color{accentblue}\tiny$\blacksquare$]
+    \item \textbf{Diseño Exclusivo:} Creamos todo a la medida de tu barbería; sin usar plantillas repetidas que se vean comunes en internet.
+    \item \textbf{Fácil de usar en Móviles:} El 90\% de tus clientes te buscará desde su celular. La web está optimizada para que sea rápida, ligera y fácil de navegar con una sola mano.
+    \item \textbf{Visibilidad en Google:} Estructuramos tu página para que aparezca en los primeros lugares cuando los clientes busquen barberías en Teoloyucan o Coyotepec.
+\end{itemize}
+
+\end{document}
