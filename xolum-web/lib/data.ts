@@ -136,14 +136,17 @@ export const proceso = [
 ];
 
 // Proyectos reales (marca del cliente + tipo de trabajo). Sin exponer datos sensibles.
+// variant: 'dark'  → logo claro sobre placa oscura
+//          'light' → logo oscuro sobre placa clara
+//          'word'  → sin archivo de logo: wordmark tipográfico
 export const proyectos = [
-  { nombre: 'ICEMEX', tipo: 'Sitio corporativo + almacén', seed: 'icemex-industrial-warehouse' },
-  { nombre: 'CARHEMA', tipo: 'Landing 3D de arquitectura', seed: 'carhema-modern-architecture' },
-  { nombre: 'La Santa', tipo: 'Sitio de restaurante', seed: 'lasanta-restaurant-interior' },
-  { nombre: 'Los Ramos', tipo: 'Restaurante + menú digital', seed: 'losramos-mexican-food' },
-  { nombre: 'The Land Café', tipo: 'Sitio de cafetería', seed: 'theland-coffee-shop' },
-  { nombre: 'Los Bigotes', tipo: 'Landing gastronómica', seed: 'bigotes-tacos-restaurant' },
-  { nombre: 'Kinara', tipo: 'E-commerce de producto', seed: 'kinara-product-ecommerce' },
+  { nombre: 'ICEMEX', tipo: 'Sitio corporativo + almacén', logo: '/proyectos/icemex.png', variant: 'dark' as const },
+  { nombre: 'CARHEMA', tipo: 'Landing 3D de arquitectura', logo: '/proyectos/carhema.jpg', variant: 'light' as const },
+  { nombre: 'La Santa', tipo: 'Sitio de restaurante', logo: '/proyectos/lasanta.jpg', variant: 'dark' as const },
+  { nombre: 'Los Ramos', tipo: 'Restaurante + menú digital', logo: '/proyectos/losramos.jpg', variant: 'dark' as const },
+  { nombre: 'The Land Café', tipo: 'Sitio de cafetería', logo: null, variant: 'word' as const, word: 'the land', wordClass: 'font-serif italic' },
+  { nombre: 'Los Bigotes', tipo: 'Barbería · landing', logo: '/proyectos/losbigotes.jpg', variant: 'dark' as const },
+  { nombre: 'Kinara', tipo: 'E-commerce de producto', logo: null, variant: 'word' as const, word: 'KINARA', wordClass: 'tracking-[0.25em] font-light' },
 ];
 
 // XOLSEC

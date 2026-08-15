@@ -2,34 +2,58 @@
 
 import { proyectos } from '@/lib/data';
 import { Reveal } from './Reveal';
-import { ArrowUpRight } from '@phosphor-icons/react';
 
-// Marquee doble para loop continuo. Único marquee de la página.
-function Row({ items, reverse }: { items: typeof proyectos; reverse?: boolean }) {
-  const doubled = [...items, ...items];
+type Proyecto = (typeof proyectos)[number];
+
+function LogoTile({ p }: { p: Proyecto }) {
   return (
-    <div className="flex w-max gap-5 animate-marquee" style={reverse ? { animationDirection: 'reverse' } : undefined}>
-      {doubled.map((p, i) => (
-        <figure
-          key={`${p.nombre}-${i}`}
-          className="group relative h-64 w-[340px] shrink-0 overflow-hidden rounded-2xl border border-white/8"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+    <figure className="group relative h-56 w-[300px] shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-ink-800/60 transition-colors duration-500 hover:border-brand-400/40">
+      {/* Placa del logo */}
+      <div
+        className={[
+          'flex h-full w-full items-center justify-center p-8 transition-transform duration-500 group-hover:scale-[1.04]',
+          p.variant === 'light' ? 'bg-white' : 'bg-[#060809]',
+        ].join(' ')}
+      >
+        {p.variant === 'word' ? (
+          <span
+            className={[
+              'bg-gradient-to-r from-white via-brand-100 to-brand-300 bg-clip-text text-4xl font-bold text-transparent',
+              p.wordClass ?? '',
+            ].join(' ')}
+          >
+            {p.word}
+          </span>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={`https://picsum.photos/seed/${p.seed}/680/520`}
+            src={p.logo!}
             alt={p.nombre}
             loading="lazy"
-            className="h-full w-full object-cover opacity-55 grayscale transition-all duration-500 group-hover:scale-105 group-hover:opacity-90 group-hover:grayscale-0"
+            className="max-h-full max-w-full object-contain opacity-90 transition-opacity duration-500 group-hover:opacity-100"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#06090e] via-[#06090e]/40 to-transparent" />
-          <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between p-5">
-            <div>
-              <p className="text-lg font-bold">{p.nombre}</p>
-              <p className="text-xs text-[var(--text-muted)]">{p.tipo}</p>
-            </div>
-            <ArrowUpRight size={20} className="text-brand-300 opacity-0 transition-opacity group-hover:opacity-100" />
-          </figcaption>
-        </figure>
+        )}
+      </div>
+
+      {/* Etiqueta de tipo, aparece al hover */}
+      <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-[#06090e] via-[#06090e]/85 to-transparent px-4 pb-3 pt-8 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+        <p className="text-sm font-semibold text-white">{p.nombre}</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-brand-300">{p.tipo}</p>
+      </figcaption>
+    </figure>
+  );
+}
+
+// Marquee doble para loop continuo.
+function Row({ items, reverse }: { items: Proyecto[]; reverse?: boolean }) {
+  const doubled = [...items, ...items];
+  return (
+    <div
+      className="flex w-max gap-5 animate-marquee"
+      style={reverse ? { animationDirection: 'reverse' } : undefined}
+    >
+      {doubled.map((p, i) => (
+        <LogoTile key={`${p.nombre}-${i}`} p={p} />
       ))}
     </div>
   );
@@ -54,7 +78,7 @@ export function Proyectos() {
         className="flex flex-col gap-5"
         style={{ maskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)' }}
       >
-        <Row items={proyectos} />
+        <Row items={[...proyectos]} />
         <Row items={[...proyectos].reverse()} reverse />
       </div>
     </section>
