@@ -76,7 +76,7 @@ export function FrigateDemo() {
         {/* Feed de alertas estilo mensajería */}
         <div ref={ref} className="relative mx-auto w-full max-w-[400px]">
           <div className="pointer-events-none absolute -inset-5 rounded-[2.4rem] bg-gradient-to-b from-emerald-500/15 to-brand-500/10 blur-2xl" aria-hidden />
-          <div className="glass relative overflow-hidden rounded-[2rem] border border-[var(--hair-strong)]">
+          <div className="stage-dark relative overflow-hidden rounded-[2rem] border border-[var(--hair-strong)] bg-[#070b10] shadow-2xl">
             <div className="flex items-center gap-3 border-b border-[var(--hair)] bg-[var(--surface)] px-5 py-3.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300">
                 <PaperPlaneTilt size={18} weight="fill" />

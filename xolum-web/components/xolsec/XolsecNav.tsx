@@ -23,7 +23,9 @@ export function XolsecNav() {
           }`}
         >
           <a href="/xolsec#top" className="flex items-center gap-2.5">
-            <Image src="/xolsec-logo.png" alt="XOLSEC" width={40} height={40} className="h-9 w-9 object-contain" priority />
+            <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-[#06090e]">
+              <Image src="/xolsec-logo.png" alt="XOLSEC" width={40} height={40} className="h-full w-full object-contain" priority />
+            </span>
             <span className="text-lg font-extrabold tracking-tight">XOLSEC</span>
           </a>
 

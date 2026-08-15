@@ -1142,7 +1142,7 @@ export default function XolsecHeroScene() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#10b981]/20 bg-[#06090e]/40 backdrop-blur-sm shadow-[0_0_50px_-15px_rgba(16,185,129,0.25)] select-none"
+      className="stage-dark relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#10b981]/25 bg-[#070b12] shadow-[0_0_50px_-15px_rgba(16,185,129,0.25)] select-none"
     >
       {/* Scanline Overlay */}
       <div

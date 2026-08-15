@@ -8,7 +8,7 @@ import { waLink } from '@/lib/data';
 const XolsecHeroScene = dynamic(() => import('./XolsecHeroScene'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full aspect-square rounded-2xl border border-[#10b981]/20 bg-[#06090e]/60 flex items-center justify-center font-mono text-xs text-[#10b981]/70">
+    <div className="stage-dark w-full h-full aspect-square rounded-2xl border border-[#10b981]/25 bg-[#070b12] flex items-center justify-center font-mono text-xs text-[#10b981]/70">
       CARGANDO RADAR 3D...
     </div>
   ),
