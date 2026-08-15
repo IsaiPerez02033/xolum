@@ -8,7 +8,7 @@ import { Proyectos } from '@/components/Proyectos';
 import { Proceso } from '@/components/Proceso';
 import { Nosotros } from '@/components/Nosotros';
 import { XolsecTeaser } from '@/components/XolsecTeaser';
-import { CTA } from '@/components/CTA';
+import { ContactForm } from '@/components/ContactForm';
 import { Footer } from '@/components/Footer';
 
 export default function Home() {
@@ -25,7 +25,7 @@ export default function Home() {
         <Proceso />
         <Nosotros />
         <XolsecTeaser />
-        <CTA />
+        <ContactForm />
       </main>
       <Footer />
     </>
