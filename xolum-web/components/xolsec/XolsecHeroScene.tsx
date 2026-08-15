@@ -46,7 +46,60 @@ const NODES: DetectionNode[] = NODES_DATA.map((n) => ({
   y: getTerrainHeight(n.x, n.z),
 }));
 
-// --- 1. Procedural 3D Terrain Grid Component (Ampliado para cubrir 100% de pantalla) ---
+// --- 0. Control Activo del Tamaño del Canvas (Fix permanente para 100% de cobertura) ---
+function CanvasResizeHandler() {
+  const { gl, camera, invalidate } = useThree();
+
+  useEffect(() => {
+    let animId: number;
+    const startTime = performance.now();
+
+    const checkSize = () => {
+      const parent = gl.domElement.parentElement;
+      if (parent) {
+        const width = parent.clientWidth;
+        const height = parent.clientHeight;
+
+        if (width > 0 && height > 0) {
+          if (camera instanceof THREE.PerspectiveCamera) {
+            const aspect = width / height;
+            if (Math.abs(camera.aspect - aspect) > 0.001) {
+              camera.aspect = aspect;
+              camera.updateProjectionMatrix();
+              invalidate();
+            }
+          }
+        }
+      }
+
+      if (performance.now() - startTime < 2500) {
+        animId = requestAnimationFrame(checkSize);
+      }
+    };
+
+    checkSize();
+
+    const ro = new ResizeObserver(() => {
+      checkSize();
+    });
+
+    if (gl.domElement.parentElement) {
+      ro.observe(gl.domElement.parentElement);
+    }
+
+    window.addEventListener('resize', checkSize);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      ro.disconnect();
+      window.removeEventListener('resize', checkSize);
+    };
+  }, [gl, camera, invalidate]);
+
+  return null;
+}
+
+// --- 1. Procedural 3D Terrain Grid Component (Malla 70x70) ---
 function TerrainGrid({
   accumTimeRef,
   isReducedMotion,
@@ -59,7 +112,6 @@ function TerrainGrid({
   const ringsMatRef = useRef<THREE.LineBasicMaterial>(null!);
 
   const { geometry, ringsGeometry } = useMemo(() => {
-    // Malla gigante (70x70) para cubrir 100% del campo de visión de la cámara sin bordes vacíos
     const width = 70;
     const height = 70;
     const segments = 90;
@@ -75,7 +127,6 @@ function TerrainGrid({
     }
     planeGeo.computeVertexNormals();
 
-    // Anillos concéntricos de radar ampliados
     const ringsGroupGeo = new THREE.BufferGeometry();
     const ringVerts: number[] = [];
     const ringRadii = [3.0, 6.0, 9.5, 13.0, 17.0, 22.0];
@@ -110,8 +161,6 @@ function TerrainGrid({
 
     const elapsed = accumTimeRef.current;
     
-    // FASE 1 y 2 (0.0s -> 4.8s): Terreno COMPLETAMENTE OCULTO (opacidad 0)
-    // FASE 3 (4.8s -> 5.8s): Fade in suave del terreno cuando desaparece la cámara
     let fade = 0;
     if (elapsed >= 4.8) {
       fade = Math.min(1.0, (elapsed - 4.8) / 1.0);
@@ -448,7 +497,7 @@ function PTZCameraAssembly({
   );
 }
 
-// --- 3. Volumetric Radar Sweep Cone Sector (Ampliado) ---
+// --- 3. Volumetric Radar Sweep Cone Sector ---
 const VolumetricSweepShader = {
   uniforms: {
     uTime: { value: 0 },
@@ -755,7 +804,7 @@ function NodeItem({
   );
 }
 
-// --- 6. Floating Dust Particles Component (Ampliado) ---
+// --- 6. Floating Dust Particles Component ---
 function FloatingDust() {
   const count = 350;
   const meshRef = useRef<THREE.Points>(null!);
@@ -977,6 +1026,7 @@ function RadarSceneContent({
 
   return (
     <>
+      <CanvasResizeHandler />
       <CameraRig accumTimeRef={accumTimeRef} isReducedMotion={isReducedMotion} />
       <HUDPhaseController
         accumTimeRef={accumTimeRef}

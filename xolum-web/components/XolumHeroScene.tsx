@@ -14,6 +14,59 @@ const PALETTE = {
   bg: '#06090e',
 };
 
+// --- 0. Control Activo del Tamaño del Canvas (Fix permanente para 100% de cobertura) ---
+function CanvasResizeHandler() {
+  const { gl, camera, invalidate } = useThree();
+
+  useEffect(() => {
+    let animId: number;
+    const startTime = performance.now();
+
+    const checkSize = () => {
+      const parent = gl.domElement.parentElement;
+      if (parent) {
+        const width = parent.clientWidth;
+        const height = parent.clientHeight;
+
+        if (width > 0 && height > 0) {
+          if (camera instanceof THREE.PerspectiveCamera) {
+            const aspect = width / height;
+            if (Math.abs(camera.aspect - aspect) > 0.001) {
+              camera.aspect = aspect;
+              camera.updateProjectionMatrix();
+              invalidate();
+            }
+          }
+        }
+      }
+
+      if (performance.now() - startTime < 2500) {
+        animId = requestAnimationFrame(checkSize);
+      }
+    };
+
+    checkSize();
+
+    const ro = new ResizeObserver(() => {
+      checkSize();
+    });
+
+    if (gl.domElement.parentElement) {
+      ro.observe(gl.domElement.parentElement);
+    }
+
+    window.addEventListener('resize', checkSize);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      ro.disconnect();
+      window.removeEventListener('resize', checkSize);
+    };
+  }, [gl, camera, invalidate]);
+
+  return null;
+}
+
 // --- 1. Procedural AI Polyhedral Central Core ---
 function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
   const outerRef = useRef<THREE.Mesh>(null!);
@@ -349,6 +402,7 @@ function ConstellationScene({ isReducedMotion }: { isReducedMotion: boolean }) {
 
   return (
     <>
+      <CanvasResizeHandler />
       <CameraRig isReducedMotion={isReducedMotion} />
 
       <ambientLight intensity={0.35} color={PALETTE.bg} />

@@ -67,11 +67,11 @@ export function Hero() {
           </motion.div>
         </div>
 
-        {/* Columna visual: Xolum 3D Constellation Scene */}
+        {/* Columna visual: Xolum 3D Constellation Scene (sin transform scale en el contenedor) */}
         <motion.div
-          initial={reduce ? {} : { opacity: 0, scale: 0.92 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          initial={reduce ? {} : { opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
           className="relative mx-auto hidden aspect-square w-full max-w-[520px] lg:block"
         >
           <XolumHeroScene />
