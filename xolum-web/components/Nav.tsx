@@ -9,6 +9,7 @@ const links = [
   { href: '/#servicios', label: 'Servicios' },
   { href: '/#bots', label: 'Bots con IA' },
   { href: '/#proyectos', label: 'Proyectos' },
+  { href: '/#nosotros', label: 'Nosotros' },
   { href: '/xolsec', label: 'XOLSEC' },
 ];
 

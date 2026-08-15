@@ -9,6 +9,23 @@ export const CONTACT = {
 export const waLink = (texto: string) =>
   `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(texto)}`;
 
+// Identidad de la marca. El nombre nace de Xólotl, el dios mexica con forma de
+// perro (xoloitzcuintle) que guía y protege a las almas en la oscuridad.
+export const nosotros = {
+  origen:
+    'En la mitología mexica, Xólotl es el dios con forma de perro que acompaña a las almas a través de la oscuridad del inframundo y las cuida en su momento más vulnerable. De ahí nace XOLUM: tecnología que guía a tu negocio y lo protege en cada paso. Y de ahí nace XOLSEC, la línea que vela por tu seguridad cuando cae la noche.',
+  slogan: 'Guía en la luz, guardia en la sombra.',
+  mision:
+    'Poner tecnología de nivel mundial —software a la medida, inteligencia artificial y seguridad— al alcance de los negocios que mueven a México, para que cada empresa opere acompañada, tranquila y protegida.',
+  vision:
+    'Ser el guardián tecnológico de referencia para las pequeñas y medianas empresas de Latinoamérica: la marca a la que un negocio le confía tanto su crecimiento como su seguridad.',
+  valores: [
+    { icon: 'Handshake', t: 'Cercanía real', d: 'Hablamos claro y sin humo. Estamos cuando nos necesitas, no solo cuando facturamos.' },
+    { icon: 'ShieldCheck', t: 'Protección', d: 'Cuidamos tus datos, tu operación y tu tranquilidad como si fueran nuestros.' },
+    { icon: 'Sparkle', t: 'Excelencia', d: 'Cada línea de código y cada cámara, a la altura de lo que confías en nosotros.' },
+  ],
+};
+
 export const stats = [
   { valor: 14, sufijo: '+', label: 'Empresas operando con nuestro software' },
   { valor: 7, sufijo: '+', label: 'Instalaciones de videovigilancia XOLSEC' },
