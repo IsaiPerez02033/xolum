@@ -160,15 +160,18 @@ function TerrainGrid({
     }
 
     const elapsed = accumTimeRef.current;
-    
-    let fade = 0;
-    if (elapsed >= 4.8) {
-      fade = Math.min(1.0, (elapsed - 4.8) / 1.0);
-    }
 
-    if (baseMatRef.current) baseMatRef.current.opacity = 0.75 * fade;
-    if (gridMatRef.current) gridMatRef.current.opacity = 0.25 * fade;
-    if (ringsMatRef.current) ringsMatRef.current.opacity = 0.38 * fade;
+    // El piso del radar aparece TENUE desde el arranque (primeros 1.2s) para dar
+    // contexto y profundidad: así el recuadro nunca se ve como un cuadro negro
+    // vacío durante el ensamblaje de la cámara. A los 4.8s sube a su intensidad
+    // plena, cuando comienza el barrido, conservando el momento de "reveal".
+    const intro = Math.min(1.0, elapsed / 0.8);
+    const boost = elapsed >= 4.8 ? Math.min(1.0, (elapsed - 4.8) / 1.0) : 0;
+    const mix = (dim: number, full: number) => dim * intro + (full - dim) * boost;
+
+    if (baseMatRef.current) baseMatRef.current.opacity = mix(0.55, 0.75);
+    if (gridMatRef.current) gridMatRef.current.opacity = mix(0.19, 0.27);
+    if (ringsMatRef.current) ringsMatRef.current.opacity = mix(0.26, 0.4);
   });
 
   return (
@@ -1144,6 +1147,17 @@ export default function XolsecHeroScene() {
       ref={containerRef}
       className="stage-dark relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#10b981]/25 bg-[#070b12] shadow-[0_0_50px_-15px_rgba(16,185,129,0.25)] select-none"
     >
+      {/* Glow interior: da profundidad al recuadro para que nunca se lea como un
+          hueco negro plano, sobre todo durante el arranque de la escena. */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 72% 58% at 50% 45%, rgba(16, 185, 129, 0.17), transparent 72%)',
+        }}
+        aria-hidden
+      />
+
       {/* Scanline Overlay */}
       <div
         className="pointer-events-none absolute inset-0 z-20 opacity-30"
@@ -1175,7 +1189,7 @@ export default function XolsecHeroScene() {
 
       {/* Three.js R3F Canvas Container */}
       <Canvas
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 z-10 w-full h-full"
         camera={{ position: [0, 0.2, 7.2], fov: 40 }}
         dpr={[1, 1.5]}
         frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}

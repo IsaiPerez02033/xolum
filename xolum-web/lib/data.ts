@@ -157,6 +157,7 @@ export const proceso = [
 //          'light' → logo oscuro sobre placa clara
 //          'word'  → sin archivo de logo: wordmark tipográfico
 export const proyectos = [
+  { nombre: 'NICTE', tipo: 'Plataforma legal con IA', logo: '/proyectos/nicte.png', variant: 'light' as const },
   { nombre: 'ICEMEX', tipo: 'Sitio corporativo + almacén', logo: '/proyectos/icemex.png', variant: 'dark' as const },
   { nombre: 'CARHEMA', tipo: 'Landing 3D de arquitectura', logo: '/proyectos/carhema.jpg', variant: 'light' as const },
   { nombre: 'La Santa', tipo: 'Sitio de restaurante', logo: '/proyectos/lasanta.jpg', variant: 'dark' as const },
