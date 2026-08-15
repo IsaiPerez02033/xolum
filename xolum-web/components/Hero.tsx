@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
-import { ArrowRight, Sparkle } from '@phosphor-icons/react';
+import { ArrowRight } from '@phosphor-icons/react';
 import dynamic from 'next/dynamic';
 import { NetworkCanvas } from './NetworkCanvas';
 import { MagneticButton } from './MagneticButton';
@@ -157,12 +157,6 @@ export function Hero() {
                 : `translate3d(${lerpMouse.current.x * 12}px, ${lerpMouse.current.y * 12}px, 0)`,
             }}
           >
-            <motion.div {...rise(0)} className="chip mb-6">
-              <Sparkle size={14} weight="fill" className="text-brand-300" />
-              Estudio de software · {' '}
-              <span className="grad-text font-semibold">México</span>
-            </motion.div>
-
             <motion.h1
               {...rise(0.08)}
               className="text-4xl font-extrabold leading-[1.03] tracking-tight sm:text-5xl lg:text-[3.9rem]"
