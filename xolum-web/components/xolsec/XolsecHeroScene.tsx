@@ -47,7 +47,17 @@ const NODES: DetectionNode[] = NODES_DATA.map((n) => ({
 }));
 
 // --- 1. Procedural 3D Terrain Grid Component ---
-function TerrainGrid() {
+function TerrainGrid({
+  startTimeRef,
+  isReducedMotion,
+}: {
+  startTimeRef: React.MutableRefObject<number>;
+  isReducedMotion: boolean;
+}) {
+  const baseMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const gridMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const ringsMatRef = useRef<THREE.LineBasicMaterial>(null!);
+
   const { geometry, ringsGeometry } = useMemo(() => {
     const width = 22;
     const height = 22;
@@ -89,16 +99,34 @@ function TerrainGrid() {
     return { geometry: planeGeo, ringsGeometry: ringsGroupGeo };
   }, []);
 
+  useFrame((state) => {
+    if (isReducedMotion) {
+      if (baseMatRef.current) baseMatRef.current.opacity = 0.7;
+      if (gridMatRef.current) gridMatRef.current.opacity = 0.22;
+      if (ringsMatRef.current) ringsMatRef.current.opacity = 0.35;
+      return;
+    }
+
+    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+    // Transición suave de opacidad del terreno durante Fase 1 (0.0s -> 2.5s)
+    const fade = Math.min(1.0, Math.max(0.1, elapsed / 2.5));
+
+    if (baseMatRef.current) baseMatRef.current.opacity = 0.7 * fade;
+    if (gridMatRef.current) gridMatRef.current.opacity = 0.22 * fade;
+    if (ringsMatRef.current) ringsMatRef.current.opacity = 0.35 * fade;
+  });
+
   return (
     <group>
       {/* Subtle base terrain surface */}
       <mesh geometry={geometry}>
-        <meshBasicMaterial color={PALETTE.bg} transparent opacity={0.7} side={THREE.DoubleSide} />
+        <meshBasicMaterial ref={baseMatRef} color={PALETTE.bg} transparent opacity={0.7} side={THREE.DoubleSide} />
       </mesh>
 
       {/* Primary emerald wireframe grid */}
       <mesh geometry={geometry}>
         <meshBasicMaterial
+          ref={gridMatRef}
           color={PALETTE.emerald}
           wireframe
           transparent
@@ -109,17 +137,287 @@ function TerrainGrid() {
 
       {/* Radar concentric circles in cyan */}
       <lineSegments geometry={ringsGeometry}>
-        <lineBasicMaterial color={PALETTE.cyan} transparent opacity={0.35} linewidth={1} />
+        <lineBasicMaterial ref={ringsMatRef} color={PALETTE.cyan} transparent opacity={0.35} linewidth={1} />
       </lineSegments>
     </group>
   );
 }
 
-// --- 2. Volumetric Radar Sweep Cone Sector ---
+// --- 2. PTZ Camera Assembly & Panning Component (Fases 1 y 2 de Intro) ---
+function PTZCameraAssembly({
+  startTimeRef,
+  isReducedMotion,
+}: {
+  startTimeRef: React.MutableRefObject<number>;
+  isReducedMotion: boolean;
+}) {
+  const mainGroupRef = useRef<THREE.Group>(null!);
+
+  const mountGroupRef = useRef<THREE.Group>(null!);
+  const mountMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+
+  const housingGroupRef = useRef<THREE.Group>(null!);
+  const housingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const domeMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+
+  const lensGroupRef = useRef<THREE.Group>(null!);
+  const lensMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const lensRingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+
+  const ptzHeadRef = useRef<THREE.Group>(null!);
+
+  const ledMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const ledLightRef = useRef<THREE.PointLight>(null!);
+
+  const visionConeMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const reticleGroupRef = useRef<THREE.Group>(null!);
+  const reticleMatRef = useRef<THREE.LineBasicMaterial>(null!);
+  const reticleRingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+
+  // Geometrías memoizadas con useMemo
+  const {
+    mountGeo,
+    housingGeo,
+    domeGeo,
+    lensGeo,
+    lensRingGeo,
+    ledGeo,
+    coneGeo,
+    reticleRingGeo,
+    reticleCrossGeo,
+  } = useMemo(() => {
+    // Montura / Brazo superior
+    const mount = new THREE.CylinderGeometry(0.16, 0.26, 0.8, 16);
+    mount.translate(0, 0.4, 0);
+
+    // Carcasa principal
+    const housing = new THREE.CylinderGeometry(0.5, 0.5, 0.6, 24);
+
+    // Domo inferior
+    const dome = new THREE.SphereGeometry(0.5, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
+    dome.rotateX(Math.PI);
+
+    // Lente frontal
+    const lens = new THREE.CylinderGeometry(0.28, 0.28, 0.3, 24);
+    lens.rotateX(Math.PI / 2);
+    lens.translate(0, 0, 0.35);
+
+    const lensRing = new THREE.TorusGeometry(0.3, 0.035, 16, 32);
+    lensRing.translate(0, 0, 0.5);
+
+    // LED indicador de estado
+    const led = new THREE.SphereGeometry(0.06, 12, 12);
+    led.translate(0, 0.2, 0.48);
+
+    // Cono de visión translúcido (Fase 2)
+    const cone = new THREE.CylinderGeometry(0.1, 4.5, 6.2, 32, 1, true);
+    cone.translate(0, -3.1, 0);
+
+    // Retícula proyectada en el suelo
+    const retRing = new THREE.RingGeometry(0.65, 0.75, 32);
+    retRing.rotateX(-Math.PI / 2);
+
+    const crossVerts = [
+      -0.85, 0.02, 0, -0.3, 0.02, 0,
+       0.3, 0.02, 0,  0.85, 0.02, 0,
+       0, 0.02, -0.85, 0, 0.02, -0.3,
+       0, 0.02,  0.3, 0, 0.02,  0.85,
+    ];
+    const retCross = new THREE.BufferGeometry();
+    retCross.setAttribute('position', new THREE.Float32BufferAttribute(crossVerts, 3));
+
+    return {
+      mountGeo: mount,
+      housingGeo: housing,
+      domeGeo: dome,
+      lensGeo: lens,
+      lensRingGeo: lensRing,
+      ledGeo: led,
+      coneGeo: cone,
+      reticleRingGeo: retRing,
+      reticleCrossGeo: retCross,
+    };
+  }, []);
+
+  useFrame((state) => {
+    if (isReducedMotion) {
+      if (mainGroupRef.current) mainGroupRef.current.visible = false;
+      return;
+    }
+
+    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+
+    // Si la intro ya terminó (Fase 3 completa > 6.0s), ocultar la cámara PTZ
+    if (elapsed > 6.0) {
+      if (mainGroupRef.current) mainGroupRef.current.visible = false;
+      return;
+    }
+
+    if (mainGroupRef.current) mainGroupRef.current.visible = true;
+
+    // Desvanecimiento suave en Fase 3 (5.0s -> 6.0s)
+    const fadeOut = elapsed > 5.0 ? Math.max(0, 1.0 - (elapsed - 5.0) / 1.0) : 1.0;
+
+    // FASE 1: Ensamblaje (0.0s -> 2.5s)
+    // 1) Brazo de montura (0.0s -> 0.8s)
+    const pMount = Math.min(1.0, elapsed / 0.8);
+    const easeMount = 1.0 - Math.pow(1.0 - pMount, 3);
+    if (mountGroupRef.current) {
+      mountGroupRef.current.position.y = 2.2 + (1.0 - easeMount) * 3.5;
+    }
+    if (mountMatRef.current) {
+      mountMatRef.current.opacity = easeMount * 0.85 * fadeOut;
+    }
+
+    // 2) Carcasa principal (0.6s -> 1.4s)
+    const pHousing = Math.max(0, Math.min(1.0, (elapsed - 0.6) / 0.8));
+    const easeHousing = 1.0 - Math.pow(1.0 - pHousing, 3);
+    if (housingGroupRef.current) {
+      housingGroupRef.current.position.z = -3.5 * (1.0 - easeHousing);
+    }
+    if (housingMatRef.current) {
+      housingMatRef.current.opacity = easeHousing * 0.85 * fadeOut;
+    }
+    if (domeMatRef.current) {
+      domeMatRef.current.opacity = easeHousing * 0.45 * fadeOut;
+    }
+
+    // 3) Lente frontal (1.2s -> 2.0s)
+    const pLens = Math.max(0, Math.min(1.0, (elapsed - 1.2) / 0.8));
+    const easeLens = 1.0 - Math.pow(1.0 - pLens, 3);
+    if (lensGroupRef.current) {
+      lensGroupRef.current.position.z = 3.5 * (1.0 - easeLens);
+    }
+    if (lensMatRef.current) {
+      lensMatRef.current.opacity = easeLens * 0.9 * fadeOut;
+    }
+    if (lensRingMatRef.current) {
+      lensRingMatRef.current.opacity = easeLens * 0.85 * fadeOut;
+    }
+
+    // 4) LED Indicador de encendido (2.0s -> 2.5s)
+    const pLed = Math.max(0, Math.min(1.0, (elapsed - 2.0) / 0.5));
+    if (ledMatRef.current) {
+      ledMatRef.current.opacity = pLed * fadeOut;
+    }
+    if (ledLightRef.current) {
+      // Destello sutil de encendido al finalizar ensamblaje
+      const flash = elapsed >= 2.3 && elapsed <= 2.6 ? 4.5 : 2.2;
+      ledLightRef.current.intensity = pLed * flash * fadeOut;
+    }
+
+    // FASE 2: Paneo PTZ (2.5s -> 5.0s)
+    let panAngle = 0;
+    let tiltAngle = -0.25;
+
+    if (elapsed >= 2.5 && elapsed <= 5.0) {
+      const ptzTime = (elapsed - 2.5) * 2.2;
+      panAngle = Math.sin(ptzTime) * 0.62; // Paneo horizontal ~±35.5°
+      tiltAngle = -0.28 + Math.cos(ptzTime * 0.8) * 0.08;
+    }
+
+    if (ptzHeadRef.current) {
+      ptzHeadRef.current.rotation.y = panAngle;
+      ptzHeadRef.current.rotation.x = tiltAngle;
+    }
+
+    // Cono de visión y retícula en suelo (Fase 2)
+    let coneOpacity = 0;
+    if (elapsed >= 2.5 && elapsed < 5.0) {
+      coneOpacity = 0.38;
+    } else if (elapsed >= 5.0 && elapsed < 5.5) {
+      coneOpacity = 0.38 * (1.0 - (elapsed - 5.0) / 0.5);
+    }
+
+    if (visionConeMatRef.current) {
+      visionConeMatRef.current.opacity = coneOpacity * fadeOut;
+    }
+
+    // Movimiento de la retícula en el suelo
+    if (reticleGroupRef.current) {
+      const retDist = 5.2;
+      reticleGroupRef.current.position.x = Math.sin(panAngle) * retDist;
+      reticleGroupRef.current.position.z = Math.cos(panAngle) * retDist;
+      reticleGroupRef.current.rotation.y = panAngle;
+    }
+    if (reticleRingMatRef.current) {
+      reticleRingMatRef.current.opacity = (coneOpacity > 0 ? 0.65 : 0) * fadeOut;
+    }
+    if (reticleMatRef.current) {
+      reticleMatRef.current.opacity = (coneOpacity > 0 ? 0.85 : 0) * fadeOut;
+    }
+  });
+
+  return (
+    <group ref={mainGroupRef} position={[0, 2.0, 0]}>
+      {/* Montura superior */}
+      <group ref={mountGroupRef}>
+        <mesh geometry={mountGeo}>
+          <meshBasicMaterial ref={mountMatRef} color={PALETTE.emerald} wireframe transparent opacity={0} />
+        </mesh>
+      </group>
+
+      {/* Cabeza PTZ giratoria */}
+      <group ref={ptzHeadRef}>
+        {/* Carcasa principal + Domo */}
+        <group ref={housingGroupRef}>
+          <mesh geometry={housingGeo}>
+            <meshBasicMaterial ref={housingMatRef} color={PALETTE.emerald} wireframe transparent opacity={0} />
+          </mesh>
+          <mesh geometry={domeGeo}>
+            <meshBasicMaterial ref={domeMatRef} color={PALETTE.emerald} wireframe transparent opacity={0} />
+          </mesh>
+        </group>
+
+        {/* Lente frontal */}
+        <group ref={lensGroupRef}>
+          <mesh geometry={lensGeo}>
+            <meshBasicMaterial ref={lensMatRef} color={PALETTE.cyan} wireframe transparent opacity={0} />
+          </mesh>
+          <mesh geometry={lensRingGeo}>
+            <meshBasicMaterial ref={lensRingMatRef} color={PALETTE.emerald} transparent opacity={0} />
+          </mesh>
+
+          {/* LED Indicador */}
+          <mesh geometry={ledGeo}>
+            <meshBasicMaterial ref={ledMatRef} color={PALETTE.emerald} transparent opacity={0} />
+          </mesh>
+          <pointLight ref={ledLightRef} color={PALETTE.emerald} intensity={0} distance={4} />
+        </group>
+
+        {/* Cono de Visión (Fase 2) */}
+        <mesh geometry={coneGeo}>
+          <meshBasicMaterial
+            ref={visionConeMatRef}
+            color={PALETTE.emerald}
+            transparent
+            opacity={0}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      </group>
+
+      {/* Retícula en suelo (Fase 2) */}
+      <group ref={reticleGroupRef}>
+        <mesh geometry={reticleRingGeo}>
+          <meshBasicMaterial ref={reticleRingMatRef} color={PALETTE.emerald} transparent opacity={0} side={THREE.DoubleSide} />
+        </mesh>
+        <lineSegments geometry={reticleCrossGeo}>
+          <lineBasicMaterial ref={reticleMatRef} color={PALETTE.cyan} transparent opacity={0} linewidth={1.5} />
+        </lineSegments>
+      </group>
+    </group>
+  );
+}
+
+// --- 3. Volumetric Radar Sweep Cone Sector ---
 const VolumetricSweepShader = {
   uniforms: {
     uTime: { value: 0 },
     uSweepAngle: { value: 0 },
+    uOpacity: { value: 0 },
     uColorBeam: { value: new THREE.Color(PALETTE.emerald) },
     uColorLead: { value: new THREE.Color(PALETTE.cyan) },
   },
@@ -137,12 +435,15 @@ const VolumetricSweepShader = {
     varying vec3 vWorldPosition;
     varying vec2 vUv;
     uniform float uSweepAngle;
+    uniform float uOpacity;
     uniform vec3 uColorBeam;
     uniform vec3 uColorLead;
 
     #define PI 3.14159265359
 
     void main() {
+      if (uOpacity <= 0.001) discard;
+
       float dist = length(vWorldPosition.xz);
       if (dist > 10.5 || dist < 0.2) discard;
 
@@ -167,7 +468,7 @@ const VolumetricSweepShader = {
       // Radius fade (soft edge at maximum distance)
       float distFade = 1.0 - smoothstep(7.5, 10.5, dist);
 
-      float alpha = (beamIntensity * 0.38 + leadEdgeGlow * 0.85) * heightFade * distFade;
+      float alpha = (beamIntensity * 0.38 + leadEdgeGlow * 0.85) * heightFade * distFade * uOpacity;
 
       vec3 color = mix(uColorBeam, uColorLead, leadEdgeGlow * 0.7);
       gl_FragColor = vec4(color, alpha);
@@ -177,11 +478,16 @@ const VolumetricSweepShader = {
 
 function RadarSweep({
   sweepRef,
+  startTimeRef,
+  isReducedMotion,
 }: {
   sweepRef: React.MutableRefObject<number>;
+  startTimeRef: React.MutableRefObject<number>;
+  isReducedMotion: boolean;
 }) {
   const shaderRef = useRef<THREE.ShaderMaterial>(null!);
   const leadLineRef = useRef<THREE.LineSegments>(null!);
+  const leadMatRef = useRef<THREE.LineBasicMaterial>(null!);
 
   const sectorGeo = useMemo(() => {
     // 3D cone sector cylinder
@@ -199,12 +505,27 @@ function RadarSweep({
 
   useFrame((state) => {
     const sweep = sweepRef.current;
+    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+
+    let sweepOpacity = 1.0;
+    if (!isReducedMotion) {
+      if (elapsed < 4.8) {
+        sweepOpacity = 0;
+      } else if (elapsed < 5.8) {
+        sweepOpacity = (elapsed - 4.8) / 1.0;
+      }
+    }
+
     if (shaderRef.current) {
       shaderRef.current.uniforms.uSweepAngle.value = sweep;
       shaderRef.current.uniforms.uTime.value = state.clock.getElapsedTime();
+      shaderRef.current.uniforms.uOpacity.value = sweepOpacity;
     }
     if (leadLineRef.current) {
       leadLineRef.current.rotation.y = -sweep;
+    }
+    if (leadMatRef.current) {
+      leadMatRef.current.opacity = 0.9 * sweepOpacity;
     }
   });
 
@@ -224,13 +545,13 @@ function RadarSweep({
 
       {/* Bright leading sweep line on ground */}
       <lineSegments ref={leadLineRef} geometry={leadLineGeo}>
-        <lineBasicMaterial color={PALETTE.emerald} transparent opacity={0.9} linewidth={2} />
+        <lineBasicMaterial ref={leadMatRef} color={PALETTE.emerald} transparent opacity={0} linewidth={2} />
       </lineSegments>
     </group>
   );
 }
 
-// --- 3. Corner Bounding Box Component for Detected Nodes ---
+// --- 4. Corner Bounding Box Component for Detected Nodes ---
 function BoundingBox3D({ size = 1.1, active = false }: { size?: number; active?: boolean }) {
   const geometry = useMemo(() => {
     const s = size / 2;
@@ -274,14 +595,16 @@ function BoundingBox3D({ size = 1.1, active = false }: { size?: number; active?:
   );
 }
 
-// --- 4. Interactive Node & Label Component ---
+// --- 5. Interactive Node & Label Component ---
 function NodeItem({
   node,
   sweepRef,
+  startTimeRef,
   isReducedMotion,
 }: {
   node: DetectionNode;
   sweepRef: React.MutableRefObject<number>;
+  startTimeRef: React.MutableRefObject<number>;
   isReducedMotion: boolean;
 }) {
   const lastSweepRef = useRef(0);
@@ -330,16 +653,21 @@ function NodeItem({
   useFrame((state) => {
     // 1) Calcular activación (0..1) sin tocar el estado de React
     let act: number;
+    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+
     if (isReducedMotion) {
       act = 0.7;
+    } else if (elapsed < 4.8) {
+      // Durante Fase 1 y 2 de la intro, los nodos se mantienen en pulso suave de reposo
+      act = 0.12;
     } else {
       const sweep = sweepRef.current;
       const diff = Math.abs(sweep - nodeAngle);
       const PI2 = Math.PI * 2;
       const minDiff = Math.min(diff, PI2 - diff);
       if (minDiff < 0.22) lastSweepRef.current = state.clock.getElapsedTime();
-      const elapsed = state.clock.getElapsedTime() - lastSweepRef.current;
-      act = elapsed < 3.0 ? Math.max(0, 1.0 - elapsed / 3.0) : 0.08;
+      const elapsedSweep = state.clock.getElapsedTime() - lastSweepRef.current;
+      act = elapsedSweep < 3.0 ? Math.max(0, 1.0 - elapsedSweep / 3.0) : 0.08;
     }
     const isActive = act > 0.35;
     const isVisible = act > 0.1;
@@ -412,7 +740,7 @@ function NodeItem({
   );
 }
 
-// --- 5. Floating Dust Particles Component ---
+// --- 6. Floating Dust Particles Component ---
 function FloatingDust() {
   const count = 220;
   const meshRef = useRef<THREE.Points>(null!);
@@ -481,8 +809,14 @@ function FloatingDust() {
   );
 }
 
-// --- 6. Camera Orbit & Mouse Parallax Controller ---
-function CameraRig({ isReducedMotion }: { isReducedMotion: boolean }) {
+// --- 7. Camera Orbit, Intro Transition & Parallax Controller ---
+function CameraRig({
+  startTimeRef,
+  isReducedMotion,
+}: {
+  startTimeRef: React.MutableRefObject<number>;
+  isReducedMotion: boolean;
+}) {
   const { camera, pointer } = useThree();
   const angleRef = useRef(0);
 
@@ -493,53 +827,162 @@ function CameraRig({ isReducedMotion }: { isReducedMotion: boolean }) {
       return;
     }
 
-    // Slow automatic camera orbit around Y
-    angleRef.current += delta * 0.07;
+    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
 
-    // Mouse Parallax reaction
+    // Reacción de Parallax con el ratón
     const mouseParallaxX = pointer.x * 1.8;
     const mouseParallaxY = pointer.y * 0.9;
 
-    const radius = 14.0;
-    const camX = Math.sin(angleRef.current) * radius + mouseParallaxX;
-    const camZ = Math.cos(angleRef.current) * radius;
-    const camY = 8.5 + mouseParallaxY;
+    let targetX: number;
+    let targetY: number;
+    let targetZ: number;
+    let lookAtY: number;
 
-    camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.05);
-    camera.lookAt(0, 0.4, 0);
+    if (elapsed < 5.0) {
+      // FASE 1 y 2: Vista frontal cercana de cámara de vigilancia PTZ
+      targetX = mouseParallaxX * 0.8;
+      targetY = 3.2 + mouseParallaxY * 0.5;
+      targetZ = 7.8;
+      lookAtY = 2.0;
+    } else if (elapsed < 6.0) {
+      // FASE 3: Transición suave (dolly lerp) de vista PTZ a órbita cenital de radar
+      const transitionProgress = (elapsed - 5.0) / 1.0;
+      const easeTrans = 1.0 - Math.pow(1.0 - transitionProgress, 3);
+
+      angleRef.current += delta * 0.07;
+      const radius = 14.0;
+      const radarX = Math.sin(angleRef.current) * radius + mouseParallaxX;
+      const radarZ = Math.cos(angleRef.current) * radius;
+      const radarY = 8.5 + mouseParallaxY;
+
+      targetX = THREE.MathUtils.lerp(mouseParallaxX * 0.8, radarX, easeTrans);
+      targetY = THREE.MathUtils.lerp(3.2 + mouseParallaxY * 0.5, radarY, easeTrans);
+      targetZ = THREE.MathUtils.lerp(7.8, radarZ, easeTrans);
+      lookAtY = THREE.MathUtils.lerp(2.0, 0.4, easeTrans);
+    } else {
+      // FASE 3+: Órbita continua de radar
+      angleRef.current += delta * 0.07;
+      const radius = 14.0;
+      targetX = Math.sin(angleRef.current) * radius + mouseParallaxX;
+      targetZ = Math.cos(angleRef.current) * radius;
+      targetY = 8.5 + mouseParallaxY;
+      lookAtY = 0.4;
+    }
+
+    camera.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.06);
+    camera.lookAt(0, lookAtY, 0);
   });
 
   return null;
 }
 
-// --- 7. Main Scene Content Wrapper ---
-function RadarSceneContent({ isReducedMotion }: { isReducedMotion: boolean }) {
+// --- 8. Controlador Dinámico del Texto del HUD según la Fase ---
+function HUDPhaseController({
+  startTimeRef,
+  isReducedMotion,
+  hudTextRef,
+  hudStatusRef,
+}: {
+  startTimeRef: React.MutableRefObject<number>;
+  isReducedMotion: boolean;
+  hudTextRef: React.RefObject<HTMLSpanElement>;
+  hudStatusRef: React.RefObject<HTMLDivElement>;
+}) {
+  const lastPhaseRef = useRef(-1);
+
+  useFrame((state) => {
+    if (isReducedMotion) {
+      if (lastPhaseRef.current !== 2) {
+        lastPhaseRef.current = 2;
+        if (hudTextRef.current) hudTextRef.current.innerText = 'XOLSEC RADAR v4.2';
+        if (hudStatusRef.current) hudStatusRef.current.innerText = 'SYS_STATUS: ONLINE';
+      }
+      return;
+    }
+
+    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+    let phase = 0;
+    if (elapsed >= 5.0) {
+      phase = 2;
+    } else if (elapsed >= 2.5) {
+      phase = 1;
+    }
+
+    if (phase !== lastPhaseRef.current) {
+      lastPhaseRef.current = phase;
+      if (hudTextRef.current && hudStatusRef.current) {
+        if (phase === 0) {
+          hudTextRef.current.innerText = 'CALIBRANDO SENSOR // PTZ-CAM-01';
+          hudStatusRef.current.innerText = 'SYS_STATUS: CALIBRATING';
+        } else if (phase === 1) {
+          hudTextRef.current.innerText = 'BARRIDO PTZ // PERÍMETRO';
+          hudStatusRef.current.innerText = 'SYS_STATUS: SCANNING';
+        } else {
+          hudTextRef.current.innerText = 'XOLSEC RADAR v4.2';
+          hudStatusRef.current.innerText = 'SYS_STATUS: ONLINE';
+        }
+      }
+    }
+  });
+
+  return null;
+}
+
+// --- 9. Main Scene Content Wrapper ---
+function RadarSceneContent({
+  startTimeRef,
+  isReducedMotion,
+  hudTextRef,
+  hudStatusRef,
+}: {
+  startTimeRef: React.MutableRefObject<number>;
+  isReducedMotion: boolean;
+  hudTextRef: React.RefObject<HTMLSpanElement>;
+  hudStatusRef: React.RefObject<HTMLDivElement>;
+}) {
   const sweepRef = useRef(0);
 
-  useFrame((_, delta) => {
-    if (!isReducedMotion) {
-      let next = sweepRef.current + delta * 0.85; // ~7.4s per full 360 rotation
+  useFrame((state, delta) => {
+    if (isReducedMotion) {
+      sweepRef.current = 1.2;
+      return;
+    }
+
+    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+
+    // En Fase 3 (5.0s+), inicia la rotación de 360° del barrido de radar
+    if (elapsed >= 4.8) {
+      let next = sweepRef.current + delta * 0.85; // ~7.4s por vuelta completa
       if (next >= Math.PI * 2) next -= Math.PI * 2;
       sweepRef.current = next;
     } else {
-      sweepRef.current = 1.2; // Static fixed angle for reduced motion
+      sweepRef.current = 0;
     }
   });
 
   return (
     <>
-      <CameraRig isReducedMotion={isReducedMotion} />
+      <CameraRig startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
+      <HUDPhaseController
+        startTimeRef={startTimeRef}
+        isReducedMotion={isReducedMotion}
+        hudTextRef={hudTextRef}
+        hudStatusRef={hudStatusRef}
+      />
 
       {/* Ambient and directional lights locked to brand palette */}
       <ambientLight intensity={0.4} color={PALETTE.bg} />
       <directionalLight position={[5, 10, 5]} intensity={0.8} color={PALETTE.emerald} />
       <pointLight position={[0, 4, 0]} intensity={1.5} color={PALETTE.cyan} distance={15} />
 
+      {/* Fases 1 y 2: Ensamblaje y Paneo de Cámara PTZ de vigilancia */}
+      <PTZCameraAssembly startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
+
       {/* Terrain grid */}
-      <TerrainGrid />
+      <TerrainGrid startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
 
       {/* Volumetric radar sweep */}
-      <RadarSweep sweepRef={sweepRef} />
+      <RadarSweep sweepRef={sweepRef} startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
 
       {/* 7 Glowing detection nodes with corner bounding boxes & monospace labels */}
       {NODES.map((node) => (
@@ -547,6 +990,7 @@ function RadarSceneContent({ isReducedMotion }: { isReducedMotion: boolean }) {
           key={node.id}
           node={node}
           sweepRef={sweepRef}
+          startTimeRef={startTimeRef}
           isReducedMotion={isReducedMotion}
         />
       ))}
@@ -572,13 +1016,19 @@ function RadarSceneContent({ isReducedMotion }: { isReducedMotion: boolean }) {
   );
 }
 
-// --- 8. Self-Contained Default Export Component ---
+// --- 10. Self-Contained Default Export Component ---
 export default function XolsecHeroScene() {
   const containerRef = useRef<HTMLDivElement>(null!);
   const [isInView, setIsInView] = useState(true);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
 
-  // IntersectionObserver to pause offscreen renders
+  // Referencias para control de inicio de intro y actualización directa de texto HUD
+  const startTimeRef = useRef<number>(0);
+  const hasStartedIntroRef = useRef(false);
+  const hudTextRef = useRef<HTMLSpanElement>(null!);
+  const hudStatusRef = useRef<HTMLDivElement>(null!);
+
+  // IntersectionObserver para pausar render cuando está fuera de pantalla e iniciar intro 1 sola vez
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -607,6 +1057,14 @@ export default function XolsecHeroScene() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  // Componente de inicialización del reloj del inicio de la intro (dentro de Canvas context o ref init)
+  const handleCanvasCreated = (state: { clock: THREE.Clock }) => {
+    if (!hasStartedIntroRef.current) {
+      startTimeRef.current = state.clock.getElapsedTime();
+      hasStartedIntroRef.current = true;
+    }
+  };
+
   return (
     <div
       ref={containerRef}
@@ -626,9 +1084,13 @@ export default function XolsecHeroScene() {
       <div className="pointer-events-none absolute top-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[10px] text-[#22d3ee]/80 border-b border-[#10b981]/20 pb-1.5">
         <div className="flex items-center gap-2 text-[#10b981]">
           <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
-          <span className="font-bold tracking-widest">XOLSEC RADAR v4.2</span>
+          <span ref={hudTextRef} className="font-bold tracking-widest">
+            CALIBRANDO SENSOR // PTZ-CAM-01
+          </span>
         </div>
-        <div className="tracking-widest">SYS_STATUS: ONLINE</div>
+        <div ref={hudStatusRef} className="tracking-widest">
+          SYS_STATUS: CALIBRATING
+        </div>
       </div>
 
       {/* Bottom HUD Coordinates */}
@@ -639,7 +1101,7 @@ export default function XolsecHeroScene() {
 
       {/* Three.js R3F Canvas Container */}
       <Canvas
-        camera={{ position: [0, 8.5, 13.5], fov: 45 }}
+        camera={{ position: [0, 3.2, 7.8], fov: 45 }}
         dpr={[1, 2]}
         frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
         gl={{
@@ -647,9 +1109,15 @@ export default function XolsecHeroScene() {
           alpha: true,
           powerPreference: 'high-performance',
         }}
+        onCreated={handleCanvasCreated}
         style={{ background: 'transparent' }}
       >
-        <RadarSceneContent isReducedMotion={isReducedMotion} />
+        <RadarSceneContent
+          startTimeRef={startTimeRef}
+          isReducedMotion={isReducedMotion}
+          hudTextRef={hudTextRef}
+          hudStatusRef={hudStatusRef}
+        />
       </Canvas>
     </div>
   );
