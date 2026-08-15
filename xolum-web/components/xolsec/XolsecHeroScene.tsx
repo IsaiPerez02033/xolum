@@ -108,8 +108,13 @@ function TerrainGrid({
     }
 
     const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
-    // Transición suave de opacidad del terreno durante Fase 1 (0.0s -> 2.5s)
-    const fade = Math.min(1.0, Math.max(0.1, elapsed / 2.5));
+    
+    // FASE 1 y 2 (0.0s -> 4.8s): Terreno COMPLETAMENTE OCULTO (opacidad 0)
+    // FASE 3 (4.8s -> 5.8s): Fade in suave del terreno cuando desaparece la cámara
+    let fade = 0;
+    if (elapsed >= 4.8) {
+      fade = Math.min(1.0, (elapsed - 4.8) / 1.0);
+    }
 
     if (baseMatRef.current) baseMatRef.current.opacity = 0.7 * fade;
     if (gridMatRef.current) gridMatRef.current.opacity = 0.22 * fade;
@@ -118,9 +123,9 @@ function TerrainGrid({
 
   return (
     <group>
-      {/* Subtle base terrain surface */}
+      {/* Base terrain surface */}
       <mesh geometry={geometry}>
-        <meshBasicMaterial ref={baseMatRef} color={PALETTE.bg} transparent opacity={0.7} side={THREE.DoubleSide} />
+        <meshBasicMaterial ref={baseMatRef} color={PALETTE.bg} transparent opacity={0} side={THREE.DoubleSide} />
       </mesh>
 
       {/* Primary emerald wireframe grid */}
@@ -130,14 +135,14 @@ function TerrainGrid({
           color={PALETTE.emerald}
           wireframe
           transparent
-          opacity={0.22}
+          opacity={0}
           wireframeLinewidth={1}
         />
       </mesh>
 
       {/* Radar concentric circles in cyan */}
       <lineSegments geometry={ringsGeometry}>
-        <lineBasicMaterial ref={ringsMatRef} color={PALETTE.cyan} transparent opacity={0.35} linewidth={1} />
+        <lineBasicMaterial ref={ringsMatRef} color={PALETTE.cyan} transparent opacity={0} linewidth={1} />
       </lineSegments>
     </group>
   );
@@ -213,7 +218,7 @@ function PTZCameraAssembly({
     const cone = new THREE.CylinderGeometry(0.1, 4.5, 6.2, 32, 1, true);
     cone.translate(0, -3.1, 0);
 
-    // Retícula proyectada en el suelo
+    // Retícula proyectada en el espacio
     const retRing = new THREE.RingGeometry(0.65, 0.75, 32);
     retRing.rotateX(-Math.PI / 2);
 
@@ -247,7 +252,7 @@ function PTZCameraAssembly({
 
     const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
 
-    // Si la intro ya terminó (Fase 3 completa > 6.0s), ocultar la cámara PTZ
+    // Si la intro ya terminó (Fase 3 completa > 6.0s), ocultar completamente la cámara PTZ
     if (elapsed > 6.0) {
       if (mainGroupRef.current) mainGroupRef.current.visible = false;
       return;
@@ -255,10 +260,10 @@ function PTZCameraAssembly({
 
     if (mainGroupRef.current) mainGroupRef.current.visible = true;
 
-    // Desvanecimiento suave en Fase 3 (5.0s -> 6.0s)
+    // Desvanecimiento suave en Fase 3 (5.0s -> 6.0s): la cámara desaparece
     const fadeOut = elapsed > 5.0 ? Math.max(0, 1.0 - (elapsed - 5.0) / 1.0) : 1.0;
 
-    // FASE 1: Ensamblaje (0.0s -> 2.5s)
+    // FASE 1: Ensamblaje de la cámara (0.0s -> 2.5s) - SIN RADAR ABAJO
     // 1) Brazo de montura (0.0s -> 0.8s)
     const pMount = Math.min(1.0, elapsed / 0.8);
     const easeMount = 1.0 - Math.pow(1.0 - pMount, 3);
@@ -306,7 +311,7 @@ function PTZCameraAssembly({
       ledLightRef.current.intensity = pLed * flash * fadeOut;
     }
 
-    // FASE 2: Paneo PTZ (2.5s -> 5.0s)
+    // FASE 2: Simulación de vigilancia / paneo PTZ (2.5s -> 5.0s)
     let panAngle = 0;
     let tiltAngle = -0.25;
 
@@ -321,7 +326,7 @@ function PTZCameraAssembly({
       ptzHeadRef.current.rotation.x = tiltAngle;
     }
 
-    // Cono de visión y retícula en suelo (Fase 2)
+    // Cono de visión y retícula en Fase 2
     let coneOpacity = 0;
     if (elapsed >= 2.5 && elapsed < 5.0) {
       coneOpacity = 0.38;
@@ -333,7 +338,7 @@ function PTZCameraAssembly({
       visionConeMatRef.current.opacity = coneOpacity * fadeOut;
     }
 
-    // Movimiento de la retícula en el suelo
+    // Movimiento de la retícula en el espacio
     if (reticleGroupRef.current) {
       const retDist = 5.2;
       reticleGroupRef.current.position.x = Math.sin(panAngle) * retDist;
@@ -399,7 +404,7 @@ function PTZCameraAssembly({
         </mesh>
       </group>
 
-      {/* Retícula en suelo (Fase 2) */}
+      {/* Retícula (Fase 2) */}
       <group ref={reticleGroupRef}>
         <mesh geometry={reticleRingGeo}>
           <meshBasicMaterial ref={reticleRingMatRef} color={PALETTE.emerald} transparent opacity={0} side={THREE.DoubleSide} />
@@ -652,14 +657,18 @@ function NodeItem({
 
   useFrame((state) => {
     // 1) Calcular activación (0..1) sin tocar el estado de React
-    let act: number;
+    let act = 0;
     const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
 
     if (isReducedMotion) {
       act = 0.7;
     } else if (elapsed < 4.8) {
-      // Durante Fase 1 y 2 de la intro, los nodos se mantienen en pulso suave de reposo
-      act = 0.12;
+      // Durante Fases 1 y 2 de la intro (formación y vigilancia PTZ): los nodos están COMPLETAMENTE OCULTOS (act = 0)
+      act = 0;
+    } else if (elapsed < 5.8) {
+      // Fade in de entrada al iniciar el radar
+      const nodeFade = (elapsed - 4.8) / 1.0;
+      act = 0.1 * nodeFade;
     } else {
       const sweep = sweepRef.current;
       const diff = Math.abs(sweep - nodeAngle);
@@ -670,22 +679,22 @@ function NodeItem({
       act = elapsedSweep < 3.0 ? Math.max(0, 1.0 - elapsedSweep / 3.0) : 0.08;
     }
     const isActive = act > 0.35;
-    const isVisible = act > 0.1;
+    const isVisible = act > 0.05;
 
     // 2) Mutar materiales/transforms directamente
     if (coreRef.current) coreRef.current.scale.setScalar(isActive ? 0.14 / 0.09 : 1);
     if (coreMatRef.current) {
       coreMatRef.current.color.copy(isActive ? emerald : cyan);
-      coreMatRef.current.opacity = isActive ? 0.95 : 0.5;
+      coreMatRef.current.opacity = isVisible ? (isActive ? 0.95 : 0.5) : 0;
     }
     if (ringMatRef.current) {
       ringMatRef.current.color.copy(isActive ? emerald : cyan);
-      ringMatRef.current.opacity = isActive ? 0.8 : 0.3;
+      ringMatRef.current.opacity = isVisible ? (isActive ? 0.8 : 0.3) : 0;
     }
     if (boxGroupRef.current) boxGroupRef.current.scale.setScalar(isActive ? 1.15 : 0.95);
     if (boxMatRef.current) {
       boxMatRef.current.color.copy(isActive ? emerald : cyan);
-      boxMatRef.current.opacity = isActive ? 0.95 : 0.4;
+      boxMatRef.current.opacity = isVisible ? (isActive ? 0.95 : 0.4) : 0;
     }
 
     // 3) Etiqueta HUD: siempre montada, se muestra/oculta y anima por estilo
@@ -701,19 +710,19 @@ function NodeItem({
       {/* Node pulse core */}
       <mesh ref={coreRef} position={[0, 0.1, 0]}>
         <sphereGeometry args={[0.09, 16, 16]} />
-        <meshBasicMaterial ref={coreMatRef} color={PALETTE.cyan} transparent opacity={0.5} />
+        <meshBasicMaterial ref={coreMatRef} color={PALETTE.cyan} transparent opacity={0} />
       </mesh>
 
       {/* Node ground ring */}
       <mesh position={[0, 0.02, 0]} rotation-x={-Math.PI / 2}>
         <ringGeometry args={[0.2, 0.28, 24]} />
-        <meshBasicMaterial ref={ringMatRef} color={PALETTE.cyan} transparent opacity={0.3} side={THREE.DoubleSide} />
+        <meshBasicMaterial ref={ringMatRef} color={PALETTE.cyan} transparent opacity={0} side={THREE.DoubleSide} />
       </mesh>
 
       {/* 3D Animated corner bounding box */}
       <group ref={boxGroupRef} position={[0, 0.4, 0]}>
         <lineSegments geometry={boxGeo}>
-          <lineBasicMaterial ref={boxMatRef} color={PALETTE.cyan} transparent opacity={0.4} />
+          <lineBasicMaterial ref={boxMatRef} color={PALETTE.cyan} transparent opacity={0} />
         </lineSegments>
       </group>
 
@@ -839,7 +848,7 @@ function CameraRig({
     let lookAtY: number;
 
     if (elapsed < 5.0) {
-      // FASE 1 y 2: Vista frontal cercana de cámara de vigilancia PTZ
+      // FASE 1 y 2: Vista frontal cercana de cámara de vigilancia PTZ (SIN RADAR)
       targetX = mouseParallaxX * 0.8;
       targetY = 3.2 + mouseParallaxY * 0.5;
       targetZ = 7.8;
@@ -950,7 +959,7 @@ function RadarSceneContent({
 
     const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
 
-    // En Fase 3 (5.0s+), inicia la rotación de 360° del barrido de radar
+    // En Fase 3 (4.8s+), inicia la rotación de 360° del barrido de radar
     if (elapsed >= 4.8) {
       let next = sweepRef.current + delta * 0.85; // ~7.4s por vuelta completa
       if (next >= Math.PI * 2) next -= Math.PI * 2;
@@ -975,16 +984,16 @@ function RadarSceneContent({
       <directionalLight position={[5, 10, 5]} intensity={0.8} color={PALETTE.emerald} />
       <pointLight position={[0, 4, 0]} intensity={1.5} color={PALETTE.cyan} distance={15} />
 
-      {/* Fases 1 y 2: Ensamblaje y Paneo de Cámara PTZ de vigilancia */}
+      {/* Fases 1 y 2: Formación y Vigilancia PTZ (SIN RADAR) */}
       <PTZCameraAssembly startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
 
-      {/* Terrain grid */}
+      {/* Terrain grid (completamente oculta en Fases 1 y 2, aparece en Fase 3) */}
       <TerrainGrid startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
 
-      {/* Volumetric radar sweep */}
+      {/* Volumetric radar sweep (aparece en Fase 3) */}
       <RadarSweep sweepRef={sweepRef} startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
 
-      {/* 7 Glowing detection nodes with corner bounding boxes & monospace labels */}
+      {/* 7 Glowing detection nodes (aparecen en Fase 3) */}
       {NODES.map((node) => (
         <NodeItem
           key={node.id}
@@ -1057,7 +1066,7 @@ export default function XolsecHeroScene() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Componente de inicialización del reloj del inicio de la intro (dentro de Canvas context o ref init)
+  // Inicialización del reloj al arrancar la escena
   const handleCanvasCreated = (state: { clock: THREE.Clock }) => {
     if (!hasStartedIntroRef.current) {
       startTimeRef.current = state.clock.getElapsedTime();
