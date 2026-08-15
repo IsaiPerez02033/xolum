@@ -161,10 +161,6 @@ function TerrainGrid({
 
     const elapsed = accumTimeRef.current;
 
-    // El piso del radar aparece TENUE desde el arranque (primeros 1.2s) para dar
-    // contexto y profundidad: así el recuadro nunca se ve como un cuadro negro
-    // vacío durante el ensamblaje de la cámara. A los 4.8s sube a su intensidad
-    // plena, cuando comienza el barrido, conservando el momento de "reveal".
     const intro = Math.min(1.0, elapsed / 0.8);
     const boost = elapsed >= 4.8 ? Math.min(1.0, (elapsed - 4.8) / 1.0) : 0;
     const mix = (dim: number, full: number) => dim * intro + (full - dim) * boost;
@@ -198,7 +194,7 @@ function TerrainGrid({
   );
 }
 
-// --- 2. Rediseño Rediseño Total PTZ Speed Dome Camera (Cero obstrucción de rejilla sobre el lente) ---
+// --- 2. PTZ Security Camera Component (Lente frontal nítido y limpio sin telarañas de alambre) ---
 function PTZCameraAssembly({
   accumTimeRef,
   isReducedMotion,
@@ -213,10 +209,11 @@ function PTZCameraAssembly({
 
   const podGroupRef = useRef<THREE.Group>(null!);
   const podSolidMatRef = useRef<THREE.MeshBasicMaterial>(null!);
-  const podWireMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const podEdgesMatRef = useRef<THREE.LineBasicMaterial>(null!);
 
   const lensGroupRef = useRef<THREE.Group>(null!);
   const bezelMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const apertureMatRef = useRef<THREE.MeshBasicMaterial>(null!);
   const glassMatRef = useRef<THREE.MeshBasicMaterial>(null!);
   const irisDotMatRef = useRef<THREE.MeshBasicMaterial>(null!);
   const irRingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
@@ -231,12 +228,13 @@ function PTZCameraAssembly({
   const reticleMatRef = useRef<THREE.LineBasicMaterial>(null!);
   const reticleRingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
 
-  // Geometrías memoizadas para Domo PTZ de alta gama
+  // Geometrías nítidas para Cámara PTZ Profesional
   const {
     mountGeo,
     podSolidGeo,
-    podWireGeo,
+    podEdgesGeo,
     bezelGeo,
+    apertureGeo,
     glassGeo,
     irisDotGeo,
     irRingGeo,
@@ -246,46 +244,58 @@ function PTZCameraAssembly({
     reticleCrossGeo,
   } = useMemo(() => {
     // 1) Brazo / Soporte Superior de Techo
-    const mountCap = new THREE.CylinderGeometry(0.35, 0.45, 0.15, 24);
-    mountCap.translate(0, 1.15, 0);
+    const cap = new THREE.CylinderGeometry(0.32, 0.40, 0.14, 24);
+    cap.translate(0, 1.10, 0);
 
-    const mountStem = new THREE.CylinderGeometry(0.12, 0.14, 0.70, 24);
-    stemTranslate(mountStem, 0, 0.72, 0);
+    const stem = new THREE.CylinderGeometry(0.11, 0.13, 0.65, 24);
+    stem.translate(0, 0.70, 0);
 
-    const mountRing = new THREE.TorusGeometry(0.42, 0.04, 16, 32);
-    mountRing.rotateX(Math.PI / 2);
-    mountRing.translate(0, 0.38, 0);
+    const ring = new THREE.TorusGeometry(0.38, 0.035, 16, 32);
+    ring.rotateX(Math.PI / 2);
+    ring.translate(0, 0.38, 0);
 
-    const mountCombined = combineGeometries([mountCap, mountStem, mountRing]);
+    const mountCombined = combineGeometries([cap, stem, ring]);
 
-    // 2) Domo Esférico PTZ Principal (Cuerpo encapsulado pulido)
-    const sphereRadius = 0.75;
-    const podSolid = new THREE.SphereGeometry(sphereRadius * 0.98, 36, 36);
+    // 2) Cuerpo Principal Cápsula PTZ (Sólido oscuro + Aristas nítidas con EdgesGeometry)
+    const podCylinder = new THREE.CylinderGeometry(0.55, 0.55, 0.65, 32);
+    podCylinder.rotateX(Math.PI / 2);
 
-    // Rejilla técnica limpia solo en la mitad superior posterior (sin cruzar el lente frontal)
-    const podWire = new THREE.SphereGeometry(sphereRadius, 28, 20, 0, Math.PI * 2, 0, Math.PI * 0.65);
+    const podDomeBack = new THREE.SphereGeometry(0.55, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
+    podDomeBack.rotateX(-Math.PI / 2);
+    podDomeBack.translate(0, 0, -0.32);
 
-    // 3) UNIDAD LENTE ÓPTICA FRONTAL COMPLETAMENTE DESPEJADA (Z = +0.76)
-    const bezel = new THREE.TorusGeometry(0.32, 0.045, 20, 40);
-    bezel.translate(0, -0.05, 0.74);
+    const podSolid = combineGeometries([podCylinder, podDomeBack]);
+    const podEdges = new THREE.EdgesGeometry(podSolid, 25);
 
-    const glass = new THREE.SphereGeometry(0.24, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.45);
+    // 3) UNIDAD LENTE ÓPTICA FRONTAL COMPLETAMENTE DESPEJADA (Z = +0.35 -> +0.45)
+    // Bisel esmeralda exterior
+    const bezel = new THREE.TorusGeometry(0.30, 0.04, 20, 40);
+    bezel.translate(0, 0, 0.36);
+
+    // Cono de apertura interior cian
+    const aperture = new THREE.CylinderGeometry(0.26, 0.16, 0.12, 32, 1, true);
+    aperture.rotateX(Math.PI / 2);
+    aperture.translate(0, 0, 0.40);
+
+    // Cristal óptico esférico cian
+    const glass = new THREE.SphereGeometry(0.18, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.45);
     glass.rotateX(Math.PI / 2);
-    glass.translate(0, -0.05, 0.74);
+    glass.translate(0, 0, 0.37);
 
-    const irisDot = new THREE.SphereGeometry(0.075, 16, 16);
-    irisDot.translate(0, -0.05, 0.83);
+    // Punto iris láser esmeralda
+    const irisDot = new THREE.SphereGeometry(0.065, 16, 16);
+    irisDot.translate(0, 0, 0.44);
 
-    // 6 Leds Infrarrojos en circulo alrededor del lente
+    // 6 Leds Infrarrojos en anillo
     const irVerts: number[] = [];
     const irCount = 6;
-    const irRadius = 0.25;
+    const irRadius = 0.24;
     for (let i = 0; i < irCount; i++) {
       const angle = (i / irCount) * Math.PI * 2;
       const x = Math.cos(angle) * irRadius;
-      const y = -0.05 + Math.sin(angle) * irRadius;
-      const tempSphere = new THREE.SphereGeometry(0.032, 12, 12);
-      tempSphere.translate(x, y, 0.77);
+      const y = Math.sin(angle) * irRadius;
+      const tempSphere = new THREE.SphereGeometry(0.03, 12, 12);
+      tempSphere.translate(x, y, 0.38);
       const posAttr = tempSphere.attributes.position;
       for (let j = 0; j < posAttr.count; j++) {
         irVerts.push(posAttr.getX(j), posAttr.getY(j), posAttr.getZ(j));
@@ -294,16 +304,16 @@ function PTZCameraAssembly({
     const irRing = new THREE.BufferGeometry();
     irRing.setAttribute('position', new THREE.Float32BufferAttribute(irVerts, 3));
 
-    // LED de Estado Verde en la esquina superior del lente
-    const led = new THREE.SphereGeometry(0.055, 12, 12);
-    led.translate(0.24, 0.22, 0.76);
+    // LED de Estado Verde
+    const led = new THREE.SphereGeometry(0.05, 12, 12);
+    led.translate(0.22, 0.22, 0.39);
 
     // Cono de Visión
     const cone = new THREE.CylinderGeometry(0.08, 4.2, 5.8, 32, 1, true);
     cone.rotateX(-Math.PI / 2);
-    cone.translate(0, -0.05, 3.6);
+    cone.translate(0, 0, 3.3);
 
-    // Retícula de Objetivo
+    // Retícula HUD
     const retRing = new THREE.RingGeometry(0.65, 0.75, 32);
     retRing.rotateX(-Math.PI / 2);
     retRing.translate(0, -2.8, 0);
@@ -320,8 +330,9 @@ function PTZCameraAssembly({
     return {
       mountGeo: mountCombined,
       podSolidGeo: podSolid,
-      podWireGeo: podWire,
+      podEdgesGeo: podEdges,
       bezelGeo: bezel,
+      apertureGeo: aperture,
       glassGeo: glass,
       irisDotGeo: irisDot,
       irRingGeo: irRing,
@@ -331,10 +342,6 @@ function PTZCameraAssembly({
       reticleCrossGeo: retCross,
     };
   }, []);
-
-  function stemTranslate(geo: THREE.BufferGeometry, x: number, y: number, z: number) {
-    geo.translate(x, y, z);
-  }
 
   function combineGeometries(geos: THREE.BufferGeometry[]): THREE.BufferGeometry {
     const verts: number[] = [];
@@ -381,11 +388,11 @@ function PTZCameraAssembly({
     if (podGroupRef.current) {
       podGroupRef.current.scale.setScalar(easePod);
     }
-    if (podWireMatRef.current) {
-      podWireMatRef.current.opacity = easePod * 0.55 * fadeOut;
+    if (podEdgesMatRef.current) {
+      podEdgesMatRef.current.opacity = easePod * 0.75 * fadeOut;
     }
     if (podSolidMatRef.current) {
-      podSolidMatRef.current.opacity = easePod * 0.85 * fadeOut;
+      podSolidMatRef.current.opacity = easePod * 0.92 * fadeOut;
     }
 
     const pLens = Math.max(0, Math.min(1.0, (elapsed - 1.2) / 0.8));
@@ -395,6 +402,9 @@ function PTZCameraAssembly({
     }
     if (bezelMatRef.current) {
       bezelMatRef.current.opacity = easeLens * 0.95 * fadeOut;
+    }
+    if (apertureMatRef.current) {
+      apertureMatRef.current.opacity = easeLens * 0.85 * fadeOut;
     }
     if (glassMatRef.current) {
       glassMatRef.current.opacity = easeLens * 0.95 * fadeOut;
@@ -417,15 +427,15 @@ function PTZCameraAssembly({
 
     // FASE 2: Inclinación y Barrido PTZ (2.2s -> 2.5s -> 5.0s)
     let panAngle = 0;
-    let tiltAngle = 0.12; // Leve ángulo inicial estético durante ensamblaje
+    let tiltAngle = 0.18; // Leve inclinación estética para apreciar el frente 3D durante el ensamblaje
 
     if (elapsed >= 2.2 && elapsed < 2.5) {
       const tTilt = (elapsed - 2.2) / 0.3;
-      tiltAngle = 0.12 + 0.28 * (1.0 - Math.cos(tTilt * Math.PI * 0.5));
+      tiltAngle = 0.18 + 0.32 * (1.0 - Math.cos(tTilt * Math.PI * 0.5));
     } else if (elapsed >= 2.5 && elapsed <= 5.0) {
       const ptzTime = (elapsed - 2.5) * 2.2;
       panAngle = Math.sin(ptzTime) * 0.62;
-      tiltAngle = 0.40 + Math.cos(ptzTime * 0.8) * 0.08;
+      tiltAngle = 0.50 + Math.cos(ptzTime * 0.8) * 0.08;
     }
 
     if (ptzHeadRef.current) {
@@ -459,7 +469,7 @@ function PTZCameraAssembly({
   });
 
   return (
-    <group ref={mainGroupRef} position={[0, 0.2, 0]}>
+    <group ref={mainGroupRef} position={[0, 0.1, 0]}>
       {/* 1) Montura Superior */}
       <group ref={mountGroupRef}>
         <mesh geometry={mountGeo}>
@@ -470,20 +480,23 @@ function PTZCameraAssembly({
       {/* 2) Cabeza PTZ Esférica Giratoria */}
       <group ref={ptzHeadRef}>
         <group ref={podGroupRef}>
-          {/* Cuerpo sólido interior oscuro */}
+          {/* Cuerpo sólido interior oscuro (bloquea partículas del fondo) */}
           <mesh geometry={podSolidGeo}>
             <meshBasicMaterial ref={podSolidMatRef} color={PALETTE.bg} transparent opacity={0} side={THREE.DoubleSide} />
           </mesh>
-          {/* Malla técnica exterior superior */}
-          <mesh geometry={podWireGeo}>
-            <meshBasicMaterial ref={podWireMatRef} color={PALETTE.emerald} wireframe transparent opacity={0} />
-          </mesh>
+          {/* Aristas estructurales nítidas (sin rejilla de alambre) */}
+          <lineSegments geometry={podEdgesGeo}>
+            <lineBasicMaterial ref={podEdgesMatRef} color={PALETTE.emerald} transparent opacity={0} linewidth={1.5} />
+          </lineSegments>
         </group>
 
-        {/* 3) UNIDAD LENTE ÓPTICO COMPLETAMENTE FRONTAL Y LÍMPIDA */}
+        {/* 3) UNIDAD LENTE ÓPTICO COMPLETAMENTE FRONTAL Y CRISTALINA */}
         <group ref={lensGroupRef}>
           <mesh geometry={bezelGeo}>
             <meshBasicMaterial ref={bezelMatRef} color={PALETTE.emerald} transparent opacity={0} />
+          </mesh>
+          <mesh geometry={apertureGeo}>
+            <meshBasicMaterial ref={apertureMatRef} color={PALETTE.cyan} wireframe transparent opacity={0} />
           </mesh>
           <mesh geometry={glassGeo}>
             <meshBasicMaterial ref={glassMatRef} color={PALETTE.cyan} transparent opacity={0} side={THREE.DoubleSide} />
@@ -935,7 +948,7 @@ function CameraRig({
     if (elapsed < 5.0) {
       targetX = mouseParallaxX * 0.6;
       targetY = 0.2 + mouseParallaxY * 0.4;
-      targetZ = 7.2;
+      targetZ = 8.5;
       lookAtY = 0.2;
     } else if (elapsed < 6.0) {
       const transitionProgress = (elapsed - 5.0) / 1.0;
@@ -949,7 +962,7 @@ function CameraRig({
 
       targetX = THREE.MathUtils.lerp(mouseParallaxX * 0.6, radarX, easeTrans);
       targetY = THREE.MathUtils.lerp(0.2 + mouseParallaxY * 0.4, radarY, easeTrans);
-      targetZ = THREE.MathUtils.lerp(7.2, radarZ, easeTrans);
+      targetZ = THREE.MathUtils.lerp(8.5, radarZ, easeTrans);
       lookAtY = THREE.MathUtils.lerp(0.2, 0.4, easeTrans);
     } else {
       angleRef.current += delta * 0.07;
@@ -1145,19 +1158,8 @@ export default function XolsecHeroScene() {
   return (
     <div
       ref={containerRef}
-      className="stage-dark relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#10b981]/25 bg-[#070b12] shadow-[0_0_50px_-15px_rgba(16,185,129,0.25)] select-none"
+      className="relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#10b981]/20 bg-[#06090e]/40 backdrop-blur-sm shadow-[0_0_50px_-15px_rgba(16,185,129,0.25)] select-none"
     >
-      {/* Glow interior: da profundidad al recuadro para que nunca se lea como un
-          hueco negro plano, sobre todo durante el arranque de la escena. */}
-      <div
-        className="pointer-events-none absolute inset-0 z-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 72% 58% at 50% 45%, rgba(16, 185, 129, 0.17), transparent 72%)',
-        }}
-        aria-hidden
-      />
-
       {/* Scanline Overlay */}
       <div
         className="pointer-events-none absolute inset-0 z-20 opacity-30"
@@ -1189,9 +1191,9 @@ export default function XolsecHeroScene() {
 
       {/* Three.js R3F Canvas Container */}
       <Canvas
-        className="absolute inset-0 z-10 w-full h-full"
-        camera={{ position: [0, 0.2, 7.2], fov: 40 }}
-        dpr={[1, 1.5]}
+        className="absolute inset-0 w-full h-full"
+        camera={{ position: [0, 0.2, 8.5], fov: 40 }}
+        dpr={[1, 2]}
         frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
         gl={{
           antialias: true,
