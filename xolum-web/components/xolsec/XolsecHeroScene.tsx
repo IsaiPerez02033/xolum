@@ -179,7 +179,7 @@ function PTZCameraAssembly({
   const reticleMatRef = useRef<THREE.LineBasicMaterial>(null!);
   const reticleRingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
 
-  // Geometrías memoizadas con useMemo
+  // Geometrías memoizadas con useMemo (Ensambladas de forma compacta en (0,0,0))
   const {
     mountGeo,
     housingGeo,
@@ -191,42 +191,43 @@ function PTZCameraAssembly({
     reticleRingGeo,
     reticleCrossGeo,
   } = useMemo(() => {
-    // Montura / Brazo superior
-    const mount = new THREE.CylinderGeometry(0.16, 0.26, 0.8, 16);
-    mount.translate(0, 0.4, 0);
+    // Montura / Brazo superior ajustado justo arriba de la carcasa
+    const mount = new THREE.CylinderGeometry(0.18, 0.28, 0.6, 16);
+    mount.translate(0, 0.55, 0);
 
-    // Carcasa principal
-    const housing = new THREE.CylinderGeometry(0.5, 0.5, 0.6, 24);
+    // Carcasa principal centrada
+    const housing = new THREE.CylinderGeometry(0.55, 0.55, 0.6, 24);
 
-    // Domo inferior
-    const dome = new THREE.SphereGeometry(0.5, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
+    // Domo inferior continuo a la carcasa
+    const dome = new THREE.SphereGeometry(0.55, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
     dome.rotateX(Math.PI);
 
-    // Lente frontal
-    const lens = new THREE.CylinderGeometry(0.28, 0.28, 0.3, 24);
+    // Lente frontal en la cara exterior
+    const lens = new THREE.CylinderGeometry(0.3, 0.3, 0.32, 24);
     lens.rotateX(Math.PI / 2);
-    lens.translate(0, 0, 0.35);
+    lens.translate(0, 0, 0.38);
 
-    const lensRing = new THREE.TorusGeometry(0.3, 0.035, 16, 32);
-    lensRing.translate(0, 0, 0.5);
+    const lensRing = new THREE.TorusGeometry(0.32, 0.038, 16, 32);
+    lensRing.translate(0, 0, 0.52);
 
     // LED indicador de estado
-    const led = new THREE.SphereGeometry(0.06, 12, 12);
-    led.translate(0, 0.2, 0.48);
+    const led = new THREE.SphereGeometry(0.065, 12, 12);
+    led.translate(0, 0.22, 0.5);
 
-    // Cono de visión translúcido (Fase 2)
-    const cone = new THREE.CylinderGeometry(0.1, 4.5, 6.2, 32, 1, true);
-    cone.translate(0, -3.1, 0);
+    // Cono de visión translúcido (Fase 2) proyectado desde el lente hacia abajo
+    const cone = new THREE.CylinderGeometry(0.1, 4.2, 5.5, 32, 1, true);
+    cone.translate(0, -2.75, 0);
 
-    // Retícula proyectada en el espacio
+    // Retícula proyectada en el espacio plano
     const retRing = new THREE.RingGeometry(0.65, 0.75, 32);
     retRing.rotateX(-Math.PI / 2);
+    retRing.translate(0, -2.8, 0);
 
     const crossVerts = [
-      -0.85, 0.02, 0, -0.3, 0.02, 0,
-       0.3, 0.02, 0,  0.85, 0.02, 0,
-       0, 0.02, -0.85, 0, 0.02, -0.3,
-       0, 0.02,  0.3, 0, 0.02,  0.85,
+      -0.85, -2.78, 0, -0.3, -2.78, 0,
+       0.3, -2.78, 0,  0.85, -2.78, 0,
+       0, -2.78, -0.85, 0, -2.78, -0.3,
+       0, -2.78,  0.3, 0, -2.78,  0.85,
     ];
     const retCross = new THREE.BufferGeometry();
     retCross.setAttribute('position', new THREE.Float32BufferAttribute(crossVerts, 3));
@@ -263,22 +264,22 @@ function PTZCameraAssembly({
     // Desvanecimiento suave en Fase 3 (5.0s -> 6.0s): la cámara desaparece
     const fadeOut = elapsed > 5.0 ? Math.max(0, 1.0 - (elapsed - 5.0) / 1.0) : 1.0;
 
-    // FASE 1: Ensamblaje de la cámara (0.0s -> 2.5s) - SIN RADAR ABAJO
-    // 1) Brazo de montura (0.0s -> 0.8s)
+    // FASE 1: Ensamblaje de la cámara en el CENTRO DEL RECUADRO (0.0s -> 2.5s)
+    // 1) Brazo de montura baja sutilmente a su posición (0.0s -> 0.8s)
     const pMount = Math.min(1.0, elapsed / 0.8);
     const easeMount = 1.0 - Math.pow(1.0 - pMount, 3);
     if (mountGroupRef.current) {
-      mountGroupRef.current.position.y = 2.2 + (1.0 - easeMount) * 3.5;
+      mountGroupRef.current.position.y = 0.8 * (1.0 - easeMount);
     }
     if (mountMatRef.current) {
       mountMatRef.current.opacity = easeMount * 0.85 * fadeOut;
     }
 
-    // 2) Carcasa principal (0.6s -> 1.4s)
+    // 2) Carcasa principal encaja desde atrás sutilmente (0.6s -> 1.4s)
     const pHousing = Math.max(0, Math.min(1.0, (elapsed - 0.6) / 0.8));
     const easeHousing = 1.0 - Math.pow(1.0 - pHousing, 3);
     if (housingGroupRef.current) {
-      housingGroupRef.current.position.z = -3.5 * (1.0 - easeHousing);
+      housingGroupRef.current.position.z = -1.4 * (1.0 - easeHousing);
     }
     if (housingMatRef.current) {
       housingMatRef.current.opacity = easeHousing * 0.85 * fadeOut;
@@ -287,11 +288,11 @@ function PTZCameraAssembly({
       domeMatRef.current.opacity = easeHousing * 0.45 * fadeOut;
     }
 
-    // 3) Lente frontal (1.2s -> 2.0s)
+    // 3) Lente frontal entra desde adelante sutilmente (1.2s -> 2.0s)
     const pLens = Math.max(0, Math.min(1.0, (elapsed - 1.2) / 0.8));
     const easeLens = 1.0 - Math.pow(1.0 - pLens, 3);
     if (lensGroupRef.current) {
-      lensGroupRef.current.position.z = 3.5 * (1.0 - easeLens);
+      lensGroupRef.current.position.z = 1.4 * (1.0 - easeLens);
     }
     if (lensMatRef.current) {
       lensMatRef.current.opacity = easeLens * 0.9 * fadeOut;
@@ -306,19 +307,18 @@ function PTZCameraAssembly({
       ledMatRef.current.opacity = pLed * fadeOut;
     }
     if (ledLightRef.current) {
-      // Destello sutil de encendido al finalizar ensamblaje
       const flash = elapsed >= 2.3 && elapsed <= 2.6 ? 4.5 : 2.2;
       ledLightRef.current.intensity = pLed * flash * fadeOut;
     }
 
     // FASE 2: Simulación de vigilancia / paneo PTZ (2.5s -> 5.0s)
     let panAngle = 0;
-    let tiltAngle = -0.25;
+    let tiltAngle = -0.2;
 
     if (elapsed >= 2.5 && elapsed <= 5.0) {
       const ptzTime = (elapsed - 2.5) * 2.2;
       panAngle = Math.sin(ptzTime) * 0.62; // Paneo horizontal ~±35.5°
-      tiltAngle = -0.28 + Math.cos(ptzTime * 0.8) * 0.08;
+      tiltAngle = -0.22 + Math.cos(ptzTime * 0.8) * 0.08;
     }
 
     if (ptzHeadRef.current) {
@@ -340,7 +340,7 @@ function PTZCameraAssembly({
 
     // Movimiento de la retícula en el espacio
     if (reticleGroupRef.current) {
-      const retDist = 5.2;
+      const retDist = 4.8;
       reticleGroupRef.current.position.x = Math.sin(panAngle) * retDist;
       reticleGroupRef.current.position.z = Math.cos(panAngle) * retDist;
       reticleGroupRef.current.rotation.y = panAngle;
@@ -354,7 +354,8 @@ function PTZCameraAssembly({
   });
 
   return (
-    <group ref={mainGroupRef} position={[0, 2.0, 0]}>
+    // Posición principal de la cámara PTZ centrada exactamente en [0, 0.2, 0]
+    <group ref={mainGroupRef} position={[0, 0.2, 0]}>
       {/* Montura superior */}
       <group ref={mountGroupRef}>
         <mesh geometry={mountGeo}>
@@ -848,11 +849,11 @@ function CameraRig({
     let lookAtY: number;
 
     if (elapsed < 5.0) {
-      // FASE 1 y 2: Vista frontal cercana de cámara de vigilancia PTZ (SIN RADAR)
-      targetX = mouseParallaxX * 0.8;
-      targetY = 3.2 + mouseParallaxY * 0.5;
-      targetZ = 7.8;
-      lookAtY = 2.0;
+      // FASE 1 y 2: Vista frontal centrada exactamente en la cámara PTZ [0, 0.2, 0]
+      targetX = mouseParallaxX * 0.6;
+      targetY = 0.2 + mouseParallaxY * 0.4;
+      targetZ = 7.2;
+      lookAtY = 0.2;
     } else if (elapsed < 6.0) {
       // FASE 3: Transición suave (dolly lerp) de vista PTZ a órbita cenital de radar
       const transitionProgress = (elapsed - 5.0) / 1.0;
@@ -864,10 +865,10 @@ function CameraRig({
       const radarZ = Math.cos(angleRef.current) * radius;
       const radarY = 8.5 + mouseParallaxY;
 
-      targetX = THREE.MathUtils.lerp(mouseParallaxX * 0.8, radarX, easeTrans);
-      targetY = THREE.MathUtils.lerp(3.2 + mouseParallaxY * 0.5, radarY, easeTrans);
-      targetZ = THREE.MathUtils.lerp(7.8, radarZ, easeTrans);
-      lookAtY = THREE.MathUtils.lerp(2.0, 0.4, easeTrans);
+      targetX = THREE.MathUtils.lerp(mouseParallaxX * 0.6, radarX, easeTrans);
+      targetY = THREE.MathUtils.lerp(0.2 + mouseParallaxY * 0.4, radarY, easeTrans);
+      targetZ = THREE.MathUtils.lerp(7.2, radarZ, easeTrans);
+      lookAtY = THREE.MathUtils.lerp(0.2, 0.4, easeTrans);
     } else {
       // FASE 3+: Órbita continua de radar
       angleRef.current += delta * 0.07;
@@ -984,7 +985,7 @@ function RadarSceneContent({
       <directionalLight position={[5, 10, 5]} intensity={0.8} color={PALETTE.emerald} />
       <pointLight position={[0, 4, 0]} intensity={1.5} color={PALETTE.cyan} distance={15} />
 
-      {/* Fases 1 y 2: Formación y Vigilancia PTZ (SIN RADAR) */}
+      {/* Fases 1 y 2: Formación y Vigilancia PTZ (Centrada en el recuadro) */}
       <PTZCameraAssembly startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
 
       {/* Terrain grid (completamente oculta en Fases 1 y 2, aparece en Fase 3) */}
@@ -1110,7 +1111,7 @@ export default function XolsecHeroScene() {
 
       {/* Three.js R3F Canvas Container */}
       <Canvas
-        camera={{ position: [0, 3.2, 7.8], fov: 45 }}
+        camera={{ position: [0, 0.2, 7.2], fov: 45 }}
         dpr={[1, 2]}
         frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
         gl={{
