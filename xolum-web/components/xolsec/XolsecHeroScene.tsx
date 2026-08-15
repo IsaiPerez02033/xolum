@@ -46,7 +46,7 @@ const NODES: DetectionNode[] = NODES_DATA.map((n) => ({
   y: getTerrainHeight(n.x, n.z),
 }));
 
-// --- 1. Procedural 3D Terrain Grid Component ---
+// --- 1. Procedural 3D Terrain Grid Component (Ampliado para cubrir 100% de pantalla) ---
 function TerrainGrid({
   accumTimeRef,
   isReducedMotion,
@@ -59,9 +59,10 @@ function TerrainGrid({
   const ringsMatRef = useRef<THREE.LineBasicMaterial>(null!);
 
   const { geometry, ringsGeometry } = useMemo(() => {
-    const width = 22;
-    const height = 22;
-    const segments = 44;
+    // Malla gigante (70x70) para cubrir 100% del campo de visión de la cámara sin bordes vacíos
+    const width = 70;
+    const height = 70;
+    const segments = 90;
 
     const planeGeo = new THREE.PlaneGeometry(width, height, segments, segments);
     planeGeo.rotateX(-Math.PI / 2);
@@ -74,10 +75,11 @@ function TerrainGrid({
     }
     planeGeo.computeVertexNormals();
 
+    // Anillos concéntricos de radar ampliados
     const ringsGroupGeo = new THREE.BufferGeometry();
     const ringVerts: number[] = [];
-    const ringRadii = [3.0, 6.0, 9.0];
-    const ringSegments = 64;
+    const ringRadii = [3.0, 6.0, 9.5, 13.0, 17.0, 22.0];
+    const ringSegments = 96;
 
     ringRadii.forEach((r) => {
       for (let i = 0; i < ringSegments; i++) {
@@ -115,9 +117,9 @@ function TerrainGrid({
       fade = Math.min(1.0, (elapsed - 4.8) / 1.0);
     }
 
-    if (baseMatRef.current) baseMatRef.current.opacity = 0.7 * fade;
-    if (gridMatRef.current) gridMatRef.current.opacity = 0.22 * fade;
-    if (ringsMatRef.current) ringsMatRef.current.opacity = 0.35 * fade;
+    if (baseMatRef.current) baseMatRef.current.opacity = 0.75 * fade;
+    if (gridMatRef.current) gridMatRef.current.opacity = 0.25 * fade;
+    if (ringsMatRef.current) ringsMatRef.current.opacity = 0.38 * fade;
   });
 
   return (
@@ -278,7 +280,6 @@ function PTZCameraAssembly({
 
     const elapsed = accumTimeRef.current;
 
-    // Si la intro terminó (> 6.0s), ocultar la cámara PTZ definitivamente en esta sesión
     if (elapsed > 6.0) {
       if (mainGroupRef.current) mainGroupRef.current.visible = false;
       return;
@@ -288,7 +289,6 @@ function PTZCameraAssembly({
 
     const fadeOut = elapsed > 5.0 ? Math.max(0, 1.0 - (elapsed - 5.0) / 1.0) : 1.0;
 
-    // FASE 1: Ensamblaje de la cámara en el CENTRO DEL RECUADRO (0.0s -> 2.5s)
     const pMount = Math.min(1.0, elapsed / 0.8);
     const easeMount = 1.0 - Math.pow(1.0 - pMount, 3);
     if (mountGroupRef.current) {
@@ -340,7 +340,6 @@ function PTZCameraAssembly({
       ledLightRef.current.intensity = pLed * flash * fadeOut;
     }
 
-    // FASE 2: Simulación de vigilancia PTZ (2.5s -> 5.0s)
     let panAngle = 0;
     let tiltAngle = 0.55;
 
@@ -449,7 +448,7 @@ function PTZCameraAssembly({
   );
 }
 
-// --- 3. Volumetric Radar Sweep Cone Sector ---
+// --- 3. Volumetric Radar Sweep Cone Sector (Ampliado) ---
 const VolumetricSweepShader = {
   uniforms: {
     uTime: { value: 0 },
@@ -482,7 +481,7 @@ const VolumetricSweepShader = {
       if (uOpacity <= 0.001) discard;
 
       float dist = length(vWorldPosition.xz);
-      if (dist > 10.5 || dist < 0.2) discard;
+      if (dist > 18.0 || dist < 0.2) discard;
 
       float fragAngle = atan(vWorldPosition.z, vWorldPosition.x);
       if (fragAngle < 0.0) fragAngle += 2.0 * PI;
@@ -498,7 +497,7 @@ const VolumetricSweepShader = {
       float leadEdgeGlow = smoothstep(0.94, 1.0, leadNormalized) * 2.2;
 
       float heightFade = smoothstep(0.0, 0.3, vWorldPosition.y + 0.1) * (1.0 - smoothstep(1.8, 2.6, vWorldPosition.y));
-      float distFade = 1.0 - smoothstep(7.5, 10.5, dist);
+      float distFade = 1.0 - smoothstep(14.0, 18.0, dist);
 
       float alpha = (beamIntensity * 0.38 + leadEdgeGlow * 0.85) * heightFade * distFade * uOpacity;
 
@@ -522,14 +521,14 @@ function RadarSweep({
   const leadMatRef = useRef<THREE.LineBasicMaterial>(null!);
 
   const sectorGeo = useMemo(() => {
-    const geo = new THREE.CylinderGeometry(0.1, 10.5, 2.4, 64, 1, true, 0, Math.PI * 2);
+    const geo = new THREE.CylinderGeometry(0.1, 18.0, 2.4, 64, 1, true, 0, Math.PI * 2);
     geo.translate(0, 1.2, 0);
     return geo;
   }, []);
 
   const leadLineGeo = useMemo(() => {
     const geo = new THREE.BufferGeometry();
-    const verts = [0, 0.05, 0, 10.5, 0.05, 0];
+    const verts = [0, 0.05, 0, 18.0, 0.05, 0];
     geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
     return geo;
   }, []);
@@ -756,9 +755,9 @@ function NodeItem({
   );
 }
 
-// --- 6. Floating Dust Particles Component ---
+// --- 6. Floating Dust Particles Component (Ampliado) ---
 function FloatingDust() {
-  const count = 220;
+  const count = 350;
   const meshRef = useRef<THREE.Points>(null!);
 
   const [positions, colors] = useMemo(() => {
@@ -769,9 +768,9 @@ function FloatingDust() {
     const cyRgb = PALETTE.cyanRgb;
 
     for (let i = 0; i < count; i++) {
-      posArray[i * 3] = (Math.random() - 0.5) * 18;
-      posArray[i * 3 + 1] = Math.random() * 5 + 0.2;
-      posArray[i * 3 + 2] = (Math.random() - 0.5) * 18;
+      posArray[i * 3] = (Math.random() - 0.5) * 32;
+      posArray[i * 3 + 1] = Math.random() * 6 + 0.2;
+      posArray[i * 3 + 2] = (Math.random() - 0.5) * 32;
 
       const isCyan = Math.random() > 0.6;
       const rgb = isCyan ? cyRgb : emRgb;
@@ -790,7 +789,7 @@ function FloatingDust() {
     for (let i = 0; i < count; i++) {
       let y = pos.getY(i) + delta * 0.18;
       let x = pos.getX(i) + Math.sin(state.clock.getElapsedTime() * 0.5 + i) * 0.003;
-      if (y > 5.5) y = 0.2;
+      if (y > 6.5) y = 0.2;
       pos.setY(i, y);
       pos.setX(i, x);
     }
@@ -863,10 +862,10 @@ function CameraRig({
       const easeTrans = 1.0 - Math.pow(1.0 - transitionProgress, 3);
 
       angleRef.current += delta * 0.07;
-      const radius = 14.0;
+      const radius = 13.0;
       const radarX = Math.sin(angleRef.current) * radius + mouseParallaxX;
       const radarZ = Math.cos(angleRef.current) * radius;
-      const radarY = 8.5 + mouseParallaxY;
+      const radarY = 7.8 + mouseParallaxY;
 
       targetX = THREE.MathUtils.lerp(mouseParallaxX * 0.6, radarX, easeTrans);
       targetY = THREE.MathUtils.lerp(0.2 + mouseParallaxY * 0.4, radarY, easeTrans);
@@ -874,10 +873,10 @@ function CameraRig({
       lookAtY = THREE.MathUtils.lerp(0.2, 0.4, easeTrans);
     } else {
       angleRef.current += delta * 0.07;
-      const radius = 14.0;
+      const radius = 13.0;
       targetX = Math.sin(angleRef.current) * radius + mouseParallaxX;
       targetZ = Math.cos(angleRef.current) * radius;
-      targetY = 8.5 + mouseParallaxY;
+      targetY = 7.8 + mouseParallaxY;
       lookAtY = 0.4;
     }
 
@@ -953,11 +952,9 @@ function RadarSceneContent({
   const sweepRef = useRef(0);
   const { size } = useThree();
 
-  // Acumulador de tiempo de intro independiente que persiste a través del scroll
   const accumTimeRef = useRef(0);
 
   useFrame((_, delta) => {
-    // Acumular tiempo de intro de forma continua sin depender del clock de R3F
     if (accumTimeRef.current < 6.5) {
       accumTimeRef.current += delta;
     }
@@ -1101,7 +1098,7 @@ export default function XolsecHeroScene() {
       {/* Three.js R3F Canvas Container */}
       <Canvas
         className="absolute inset-0 w-full h-full"
-        camera={{ position: [0, 0.2, 7.2], fov: 45 }}
+        camera={{ position: [0, 0.2, 7.2], fov: 40 }}
         dpr={[1, 2]}
         frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
         gl={{

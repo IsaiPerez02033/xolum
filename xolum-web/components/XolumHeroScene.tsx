@@ -216,10 +216,10 @@ function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
   );
 }
 
-// --- 3. Subtle 3D Wireframe Ground Plane ---
+// --- 3. Subtle 3D Wireframe Ground Plane (Ampliado 70x70) ---
 function WireframeGround() {
   const geometry = useMemo(() => {
-    const geo = new THREE.PlaneGeometry(24, 24, 36, 36);
+    const geo = new THREE.PlaneGeometry(70, 70, 80, 80);
     geo.rotateX(-Math.PI / 2);
     geo.translate(0, -3.2, 0);
 
@@ -247,7 +247,7 @@ function WireframeGround() {
 
 // --- 4. Floating Dust Particles Component ---
 function FloatingDust() {
-  const count = 200;
+  const count = 300;
   const pointsRef = useRef<THREE.Points>(null!);
 
   const [positions, colors] = useMemo(() => {
@@ -258,9 +258,9 @@ function FloatingDust() {
     const emRgb = PALETTE.emeraldRgb;
 
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 18;
+      pos[i * 3] = (Math.random() - 0.5) * 30;
       pos[i * 3 + 1] = (Math.random() - 0.5) * 8 + 0.5;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 18;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 30;
 
       const isEmerald = Math.random() > 0.65;
       const rgb = isEmerald ? emRgb : cyRgb;
@@ -331,10 +331,10 @@ function CameraRig({ isReducedMotion }: { isReducedMotion: boolean }) {
     const mouseX = pointer.x * 1.6;
     const mouseY = pointer.y * 0.8;
 
-    const radius = 12.0;
+    const radius = 11.5;
     const camX = Math.sin(angleRef.current) * radius + mouseX;
     const camZ = Math.cos(angleRef.current) * radius;
-    const camY = 4.5 + mouseY;
+    const camY = 4.2 + mouseY;
 
     camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.05);
     camera.lookAt(0, 0.1, 0);
@@ -442,7 +442,7 @@ export default function XolumHeroScene() {
 
       <Canvas
         className="absolute inset-0 w-full h-full"
-        camera={{ position: [0, 4.5, 12.0], fov: 45 }}
+        camera={{ position: [0, 4.5, 12.0], fov: 40 }}
         dpr={[1, 2]}
         frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
         gl={{
