@@ -46,7 +46,7 @@ const NODES: DetectionNode[] = NODES_DATA.map((n) => ({
   y: getTerrainHeight(n.x, n.z),
 }));
 
-// --- 0. Control Activo del Tamaño del Canvas (Fix permanente para 100% de cobertura) ---
+// --- 0. Control Activo del Tamaño del Canvas ---
 function CanvasResizeHandler() {
   const { gl, camera, invalidate } = useThree();
 
@@ -195,7 +195,7 @@ function TerrainGrid({
   );
 }
 
-// --- 2. High-Detail PTZ Surveillance Camera Component ---
+// --- 2. High-Detail PTZ Surveillance Camera Component (Alineación Óptica Perfecta sin Ocultarse) ---
 function PTZCameraAssembly({
   accumTimeRef,
   isReducedMotion,
@@ -244,38 +244,41 @@ function PTZCameraAssembly({
     reticleRingGeo,
     reticleCrossGeo,
   } = useMemo(() => {
+    // 1) Montura superior
     const mount = new THREE.CylinderGeometry(0.2, 0.32, 0.7, 24);
     mount.translate(0, 0.65, 0);
 
-    const housing = new THREE.CylinderGeometry(0.6, 0.6, 0.7, 32);
-    const housingSolid = new THREE.CylinderGeometry(0.58, 0.58, 0.68, 32);
+    // 2) Carcasa cilíndrica principal (radio = 0.52)
+    const housing = new THREE.CylinderGeometry(0.55, 0.55, 0.7, 32);
+    const housingSolid = new THREE.CylinderGeometry(0.52, 0.52, 0.68, 32);
 
-    const dome = new THREE.SphereGeometry(0.58, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.5);
+    const dome = new THREE.SphereGeometry(0.52, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.5);
     dome.rotateX(Math.PI);
 
-    const bezel = new THREE.TorusGeometry(0.36, 0.045, 20, 40);
-    bezel.translate(0, 0, 0.38);
+    // 3) LENTE ÓPTICA PROYECTADA AL FRENTE (z = 0.56 -> 0.64 para no solaparse con la carcasa)
+    const bezel = new THREE.TorusGeometry(0.34, 0.045, 20, 40);
+    bezel.translate(0, 0, 0.56);
 
-    const aperture = new THREE.CylinderGeometry(0.32, 0.22, 0.18, 32, 1, true);
+    const aperture = new THREE.CylinderGeometry(0.30, 0.20, 0.16, 32, 1, true);
     aperture.rotateX(Math.PI / 2);
-    aperture.translate(0, 0, 0.44);
+    aperture.translate(0, 0, 0.60);
 
-    const glass = new THREE.SphereGeometry(0.24, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.45);
+    const glass = new THREE.SphereGeometry(0.22, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.45);
     glass.rotateX(Math.PI / 2);
-    glass.translate(0, 0, 0.38);
+    glass.translate(0, 0, 0.56);
 
-    const irisDot = new THREE.SphereGeometry(0.075, 16, 16);
-    irisDot.translate(0, 0, 0.49);
+    const irisDot = new THREE.SphereGeometry(0.07, 16, 16);
+    irisDot.translate(0, 0, 0.64);
 
     const irVerts: number[] = [];
     const irCount = 6;
-    const irRadius = 0.28;
+    const irRadius = 0.26;
     for (let i = 0; i < irCount; i++) {
       const angle = (i / irCount) * Math.PI * 2;
       const x = Math.cos(angle) * irRadius;
       const y = Math.sin(angle) * irRadius;
-      const tempSphere = new THREE.SphereGeometry(0.035, 12, 12);
-      tempSphere.translate(x, y, 0.46);
+      const tempSphere = new THREE.SphereGeometry(0.032, 12, 12);
+      tempSphere.translate(x, y, 0.60);
       const posAttr = tempSphere.attributes.position;
       for (let j = 0; j < posAttr.count; j++) {
         irVerts.push(posAttr.getX(j), posAttr.getY(j), posAttr.getZ(j));
@@ -284,8 +287,8 @@ function PTZCameraAssembly({
     const irRing = new THREE.BufferGeometry();
     irRing.setAttribute('position', new THREE.Float32BufferAttribute(irVerts, 3));
 
-    const led = new THREE.SphereGeometry(0.065, 12, 12);
-    led.translate(0, 0.24, 0.52);
+    const led = new THREE.SphereGeometry(0.06, 12, 12);
+    led.translate(0, 0.24, 0.62);
 
     const cone = new THREE.CylinderGeometry(0.08, 4.2, 5.8, 32, 1, true);
     cone.rotateX(-Math.PI / 2);
@@ -338,6 +341,7 @@ function PTZCameraAssembly({
 
     const fadeOut = elapsed > 5.0 ? Math.max(0, 1.0 - (elapsed - 5.0) / 1.0) : 1.0;
 
+    // FASE 1: Ensamblaje frontal visible (0.0s -> 2.2s)
     const pMount = Math.min(1.0, elapsed / 0.8);
     const easeMount = 1.0 - Math.pow(1.0 - pMount, 3);
     if (mountGroupRef.current) {
@@ -389,10 +393,15 @@ function PTZCameraAssembly({
       ledLightRef.current.intensity = pLed * flash * fadeOut;
     }
 
+    // Orientación PTZ: Durante el ensamblaje (0.0s -> 2.2s) la cámara mira al frente.
+    // Transición fluida de inclinación hacia abajo (2.2s -> 2.5s) para el barrido de vigilancia (2.5s -> 5.0s)
     let panAngle = 0;
-    let tiltAngle = 0.55;
+    let tiltAngle = 0;
 
-    if (elapsed >= 2.5 && elapsed <= 5.0) {
+    if (elapsed >= 2.2 && elapsed < 2.5) {
+      const tTilt = (elapsed - 2.2) / 0.3;
+      tiltAngle = 0.55 * (1.0 - Math.cos(tTilt * Math.PI * 0.5));
+    } else if (elapsed >= 2.5 && elapsed <= 5.0) {
       const ptzTime = (elapsed - 2.5) * 2.2;
       panAngle = Math.sin(ptzTime) * 0.62;
       tiltAngle = 0.55 + Math.cos(ptzTime * 0.8) * 0.08;
