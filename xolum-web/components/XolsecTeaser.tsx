@@ -50,7 +50,7 @@ export function XolsecTeaser() {
               <div className="absolute inset-0 rounded-full border border-emerald-400/20" aria-hidden />
               <div className="absolute inset-6 rounded-full border border-brand-400/20" aria-hidden />
               <div className="absolute inset-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/20 blur-[60px]" aria-hidden />
-              <Image src="/xolsec-logo.png" alt="XOLSEC" width={260} height={260} className="relative animate-floaty object-contain" />
+              <Image src="/xolsec-logo-transparent.png" alt="XOLSEC" width={560} height={658} sizes="260px" className="relative h-full w-full animate-floaty object-contain" />
             </div>
           </div>
         </motion.a>
