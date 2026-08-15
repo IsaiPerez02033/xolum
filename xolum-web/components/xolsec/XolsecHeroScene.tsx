@@ -195,7 +195,7 @@ function TerrainGrid({
   );
 }
 
-// --- 2. High-Detail PTZ Surveillance Camera Component (Orientación Horizontal Z Perfecta) ---
+// --- 2. Rediseño Rediseño Total PTZ Speed Dome Camera (Cero obstrucción de rejilla sobre el lente) ---
 function PTZCameraAssembly({
   accumTimeRef,
   isReducedMotion,
@@ -208,15 +208,14 @@ function PTZCameraAssembly({
   const mountGroupRef = useRef<THREE.Group>(null!);
   const mountMatRef = useRef<THREE.MeshBasicMaterial>(null!);
 
-  const housingGroupRef = useRef<THREE.Group>(null!);
-  const housingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
-  const housingBaseMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const podGroupRef = useRef<THREE.Group>(null!);
+  const podSolidMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const podWireMatRef = useRef<THREE.MeshBasicMaterial>(null!);
 
   const lensGroupRef = useRef<THREE.Group>(null!);
-  const lensBezelMatRef = useRef<THREE.MeshBasicMaterial>(null!);
-  const lensApertureMatRef = useRef<THREE.MeshBasicMaterial>(null!);
-  const lensGlassMatRef = useRef<THREE.MeshBasicMaterial>(null!);
-  const lensIrisDotMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const bezelMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const glassMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const irisDotMatRef = useRef<THREE.MeshBasicMaterial>(null!);
   const irRingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
 
   const ptzHeadRef = useRef<THREE.Group>(null!);
@@ -229,61 +228,61 @@ function PTZCameraAssembly({
   const reticleMatRef = useRef<THREE.LineBasicMaterial>(null!);
   const reticleRingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
 
+  // Geometrías memoizadas para Domo PTZ de alta gama
   const {
     mountGeo,
-    housingGeo,
-    housingSolidGeo,
-    domeBackGeo,
-    lensBezelGeo,
-    lensApertureGeo,
-    lensGlassGeo,
-    lensIrisDotGeo,
+    podSolidGeo,
+    podWireGeo,
+    bezelGeo,
+    glassGeo,
+    irisDotGeo,
     irRingGeo,
     ledGeo,
     coneGeo,
     reticleRingGeo,
     reticleCrossGeo,
   } = useMemo(() => {
-    // 1) Montura superior vertical
-    const mount = new THREE.CylinderGeometry(0.18, 0.28, 0.65, 24);
-    mount.translate(0, 0.62, 0);
+    // 1) Brazo / Soporte Superior de Techo
+    const mountCap = new THREE.CylinderGeometry(0.35, 0.45, 0.15, 24);
+    mountCap.translate(0, 1.15, 0);
 
-    // 2) Carcasa cilíndrica horizontal orientada en el Eje Z (rotateX 90°)
-    const housing = new THREE.CylinderGeometry(0.52, 0.52, 0.70, 32);
-    housing.rotateX(Math.PI / 2);
+    const mountStem = new THREE.CylinderGeometry(0.12, 0.14, 0.70, 24);
+    stemTranslate(mountStem, 0, 0.72, 0);
 
-    const housingSolid = new THREE.CylinderGeometry(0.49, 0.49, 0.68, 32);
-    housingSolid.rotateX(Math.PI / 2);
+    const mountRing = new THREE.TorusGeometry(0.42, 0.04, 16, 32);
+    mountRing.rotateX(Math.PI / 2);
+    mountRing.translate(0, 0.38, 0);
 
-    // Tapa trasera esférica
-    const domeBack = new THREE.SphereGeometry(0.49, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
-    domeBack.rotateX(-Math.PI / 2);
-    domeBack.translate(0, 0, -0.34);
+    const mountCombined = combineGeometries([mountCap, mountStem, mountRing]);
 
-    // 3) LENTE ÓPTICO SITUADO EXACTAMENTE EN LA CARA FRONTAL DEL CILINDRO (Z = +0.35)
-    const bezel = new THREE.TorusGeometry(0.32, 0.04, 20, 40);
-    bezel.translate(0, 0, 0.36);
+    // 2) Domo Esférico PTZ Principal (Cuerpo encapsulado pulido)
+    const sphereRadius = 0.75;
+    const podSolid = new THREE.SphereGeometry(sphereRadius * 0.98, 36, 36);
 
-    const aperture = new THREE.CylinderGeometry(0.28, 0.18, 0.12, 32, 1, true);
-    aperture.rotateX(Math.PI / 2);
-    aperture.translate(0, 0, 0.40);
+    // Rejilla técnica limpia solo en la mitad superior posterior (sin cruzar el lente frontal)
+    const podWire = new THREE.SphereGeometry(sphereRadius, 28, 20, 0, Math.PI * 2, 0, Math.PI * 0.65);
 
-    const glass = new THREE.SphereGeometry(0.20, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.45);
+    // 3) UNIDAD LENTE ÓPTICA FRONTAL COMPLETAMENTE DESPEJADA (Z = +0.76)
+    const bezel = new THREE.TorusGeometry(0.32, 0.045, 20, 40);
+    bezel.translate(0, -0.05, 0.74);
+
+    const glass = new THREE.SphereGeometry(0.24, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.45);
     glass.rotateX(Math.PI / 2);
-    glass.translate(0, 0, 0.37);
+    glass.translate(0, -0.05, 0.74);
 
-    const irisDot = new THREE.SphereGeometry(0.065, 16, 16);
-    irisDot.translate(0, 0, 0.44);
+    const irisDot = new THREE.SphereGeometry(0.075, 16, 16);
+    irisDot.translate(0, -0.05, 0.83);
 
+    // 6 Leds Infrarrojos en circulo alrededor del lente
     const irVerts: number[] = [];
     const irCount = 6;
     const irRadius = 0.25;
     for (let i = 0; i < irCount; i++) {
       const angle = (i / irCount) * Math.PI * 2;
       const x = Math.cos(angle) * irRadius;
-      const y = Math.sin(angle) * irRadius;
-      const tempSphere = new THREE.SphereGeometry(0.03, 12, 12);
-      tempSphere.translate(x, y, 0.38);
+      const y = -0.05 + Math.sin(angle) * irRadius;
+      const tempSphere = new THREE.SphereGeometry(0.032, 12, 12);
+      tempSphere.translate(x, y, 0.77);
       const posAttr = tempSphere.attributes.position;
       for (let j = 0; j < posAttr.count; j++) {
         irVerts.push(posAttr.getX(j), posAttr.getY(j), posAttr.getZ(j));
@@ -292,13 +291,16 @@ function PTZCameraAssembly({
     const irRing = new THREE.BufferGeometry();
     irRing.setAttribute('position', new THREE.Float32BufferAttribute(irVerts, 3));
 
+    // LED de Estado Verde en la esquina superior del lente
     const led = new THREE.SphereGeometry(0.055, 12, 12);
-    led.translate(0, 0.26, 0.40);
+    led.translate(0.24, 0.22, 0.76);
 
+    // Cono de Visión
     const cone = new THREE.CylinderGeometry(0.08, 4.2, 5.8, 32, 1, true);
     cone.rotateX(-Math.PI / 2);
-    cone.translate(0, 0, 3.3);
+    cone.translate(0, -0.05, 3.6);
 
+    // Retícula de Objetivo
     const retRing = new THREE.RingGeometry(0.65, 0.75, 32);
     retRing.rotateX(-Math.PI / 2);
     retRing.translate(0, -2.8, 0);
@@ -313,14 +315,12 @@ function PTZCameraAssembly({
     retCross.setAttribute('position', new THREE.Float32BufferAttribute(crossVerts, 3));
 
     return {
-      mountGeo: mount,
-      housingGeo: housing,
-      housingSolidGeo: housingSolid,
-      domeBackGeo: domeBack,
-      lensBezelGeo: bezel,
-      lensApertureGeo: aperture,
-      lensGlassGeo: glass,
-      lensIrisDotGeo: irisDot,
+      mountGeo: mountCombined,
+      podSolidGeo: podSolid,
+      podWireGeo: podWire,
+      bezelGeo: bezel,
+      glassGeo: glass,
+      irisDotGeo: irisDot,
       irRingGeo: irRing,
       ledGeo: led,
       coneGeo: cone,
@@ -328,6 +328,23 @@ function PTZCameraAssembly({
       reticleCrossGeo: retCross,
     };
   }, []);
+
+  function stemTranslate(geo: THREE.BufferGeometry, x: number, y: number, z: number) {
+    geo.translate(x, y, z);
+  }
+
+  function combineGeometries(geos: THREE.BufferGeometry[]): THREE.BufferGeometry {
+    const verts: number[] = [];
+    geos.forEach((g) => {
+      const pos = g.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        verts.push(pos.getX(i), pos.getY(i), pos.getZ(i));
+      }
+    });
+    const combined = new THREE.BufferGeometry();
+    combined.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    return combined;
+  }
 
   useFrame(() => {
     if (isReducedMotion) {
@@ -346,7 +363,7 @@ function PTZCameraAssembly({
 
     const fadeOut = elapsed > 5.0 ? Math.max(0, 1.0 - (elapsed - 5.0) / 1.0) : 1.0;
 
-    // FASE 1: Ensamblaje frontal totalmente visible (0.0s -> 2.2s)
+    // FASE 1: Ensamblaje de la cámara en el centro (0.0s -> 2.2s)
     const pMount = Math.min(1.0, elapsed / 0.8);
     const easeMount = 1.0 - Math.pow(1.0 - pMount, 3);
     if (mountGroupRef.current) {
@@ -356,34 +373,31 @@ function PTZCameraAssembly({
       mountMatRef.current.opacity = easeMount * 0.85 * fadeOut;
     }
 
-    const pHousing = Math.max(0, Math.min(1.0, (elapsed - 0.6) / 0.8));
-    const easeHousing = 1.0 - Math.pow(1.0 - pHousing, 3);
-    if (housingGroupRef.current) {
-      housingGroupRef.current.position.z = -1.4 * (1.0 - easeHousing);
+    const pPod = Math.max(0, Math.min(1.0, (elapsed - 0.6) / 0.8));
+    const easePod = 1.0 - Math.pow(1.0 - pPod, 3);
+    if (podGroupRef.current) {
+      podGroupRef.current.scale.setScalar(easePod);
     }
-    if (housingMatRef.current) {
-      housingMatRef.current.opacity = easeHousing * 0.85 * fadeOut;
+    if (podWireMatRef.current) {
+      podWireMatRef.current.opacity = easePod * 0.55 * fadeOut;
     }
-    if (housingBaseMatRef.current) {
-      housingBaseMatRef.current.opacity = easeHousing * 0.65 * fadeOut;
+    if (podSolidMatRef.current) {
+      podSolidMatRef.current.opacity = easePod * 0.85 * fadeOut;
     }
 
     const pLens = Math.max(0, Math.min(1.0, (elapsed - 1.2) / 0.8));
     const easeLens = 1.0 - Math.pow(1.0 - pLens, 3);
     if (lensGroupRef.current) {
-      lensGroupRef.current.position.z = 1.4 * (1.0 - easeLens);
+      lensGroupRef.current.position.z = 0.6 * (1.0 - easeLens);
     }
-    if (lensBezelMatRef.current) {
-      lensBezelMatRef.current.opacity = easeLens * 0.95 * fadeOut;
+    if (bezelMatRef.current) {
+      bezelMatRef.current.opacity = easeLens * 0.95 * fadeOut;
     }
-    if (lensApertureMatRef.current) {
-      lensApertureMatRef.current.opacity = easeLens * 0.85 * fadeOut;
+    if (glassMatRef.current) {
+      glassMatRef.current.opacity = easeLens * 0.95 * fadeOut;
     }
-    if (lensGlassMatRef.current) {
-      lensGlassMatRef.current.opacity = easeLens * 0.9 * fadeOut;
-    }
-    if (lensIrisDotMatRef.current) {
-      lensIrisDotMatRef.current.opacity = easeLens * 0.95 * fadeOut;
+    if (irisDotMatRef.current) {
+      irisDotMatRef.current.opacity = easeLens * 1.0 * fadeOut;
     }
     if (irRingMatRef.current) {
       irRingMatRef.current.opacity = easeLens * 0.85 * fadeOut;
@@ -398,17 +412,17 @@ function PTZCameraAssembly({
       ledLightRef.current.intensity = pLed * flash * fadeOut;
     }
 
-    // FASE 2: Inclinación fluida hacia la vista de vigilancia (2.2s -> 2.5s -> 5.0s)
+    // FASE 2: Inclinación y Barrido PTZ (2.2s -> 2.5s -> 5.0s)
     let panAngle = 0;
-    let tiltAngle = 0.22; // Inclinación suave inicial durante el ensamblaje para ver la lente completa
+    let tiltAngle = 0.12; // Leve ángulo inicial estético durante ensamblaje
 
     if (elapsed >= 2.2 && elapsed < 2.5) {
       const tTilt = (elapsed - 2.2) / 0.3;
-      tiltAngle = 0.22 + 0.28 * (1.0 - Math.cos(tTilt * Math.PI * 0.5));
+      tiltAngle = 0.12 + 0.28 * (1.0 - Math.cos(tTilt * Math.PI * 0.5));
     } else if (elapsed >= 2.5 && elapsed <= 5.0) {
       const ptzTime = (elapsed - 2.5) * 2.2;
       panAngle = Math.sin(ptzTime) * 0.62;
-      tiltAngle = 0.50 + Math.cos(ptzTime * 0.8) * 0.08;
+      tiltAngle = 0.40 + Math.cos(ptzTime * 0.8) * 0.08;
     }
 
     if (ptzHeadRef.current) {
@@ -443,37 +457,36 @@ function PTZCameraAssembly({
 
   return (
     <group ref={mainGroupRef} position={[0, 0.2, 0]}>
+      {/* 1) Montura Superior */}
       <group ref={mountGroupRef}>
         <mesh geometry={mountGeo}>
           <meshBasicMaterial ref={mountMatRef} color={PALETTE.emerald} wireframe transparent opacity={0} />
         </mesh>
       </group>
 
+      {/* 2) Cabeza PTZ Esférica Giratoria */}
       <group ref={ptzHeadRef}>
-        <group ref={housingGroupRef}>
-          <mesh geometry={housingSolidGeo}>
-            <meshBasicMaterial ref={housingBaseMatRef} color={PALETTE.bg} transparent opacity={0} side={THREE.DoubleSide} />
+        <group ref={podGroupRef}>
+          {/* Cuerpo sólido interior oscuro */}
+          <mesh geometry={podSolidGeo}>
+            <meshBasicMaterial ref={podSolidMatRef} color={PALETTE.bg} transparent opacity={0} side={THREE.DoubleSide} />
           </mesh>
-          <mesh geometry={housingGeo}>
-            <meshBasicMaterial ref={housingMatRef} color={PALETTE.emerald} wireframe transparent opacity={0} />
-          </mesh>
-          <mesh geometry={domeBackGeo}>
-            <meshBasicMaterial color={PALETTE.emerald} wireframe transparent opacity={0.4} />
+          {/* Malla técnica exterior superior */}
+          <mesh geometry={podWireGeo}>
+            <meshBasicMaterial ref={podWireMatRef} color={PALETTE.emerald} wireframe transparent opacity={0} />
           </mesh>
         </group>
 
+        {/* 3) UNIDAD LENTE ÓPTICO COMPLETAMENTE FRONTAL Y LÍMPIDA */}
         <group ref={lensGroupRef}>
-          <mesh geometry={lensBezelGeo}>
-            <meshBasicMaterial ref={lensBezelMatRef} color={PALETTE.emerald} transparent opacity={0} />
+          <mesh geometry={bezelGeo}>
+            <meshBasicMaterial ref={bezelMatRef} color={PALETTE.emerald} transparent opacity={0} />
           </mesh>
-          <mesh geometry={lensApertureGeo}>
-            <meshBasicMaterial ref={lensApertureMatRef} color={PALETTE.cyan} wireframe transparent opacity={0} />
+          <mesh geometry={glassGeo}>
+            <meshBasicMaterial ref={glassMatRef} color={PALETTE.cyan} transparent opacity={0} side={THREE.DoubleSide} />
           </mesh>
-          <mesh geometry={lensGlassGeo}>
-            <meshBasicMaterial ref={lensGlassMatRef} color={PALETTE.cyan} transparent opacity={0} side={THREE.DoubleSide} />
-          </mesh>
-          <mesh geometry={lensIrisDotGeo}>
-            <meshBasicMaterial ref={lensIrisDotMatRef} color={PALETTE.emerald} transparent opacity={0} />
+          <mesh geometry={irisDotGeo}>
+            <meshBasicMaterial ref={irisDotMatRef} color={PALETTE.emerald} transparent opacity={0} />
           </mesh>
           <mesh geometry={irRingGeo}>
             <meshBasicMaterial ref={irRingMatRef} color={PALETTE.cyan} transparent opacity={0} />
@@ -485,6 +498,7 @@ function PTZCameraAssembly({
           <pointLight ref={ledLightRef} color={PALETTE.emerald} intensity={0} distance={4} />
         </group>
 
+        {/* Cono de Visión */}
         <mesh geometry={coneGeo}>
           <meshBasicMaterial
             ref={visionConeMatRef}
@@ -498,6 +512,7 @@ function PTZCameraAssembly({
         </mesh>
       </group>
 
+      {/* 4) Retícula HUD */}
       <group ref={reticleGroupRef}>
         <mesh geometry={reticleRingGeo}>
           <meshBasicMaterial ref={reticleRingMatRef} color={PALETTE.emerald} transparent opacity={0} side={THREE.DoubleSide} />
