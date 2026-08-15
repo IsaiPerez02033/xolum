@@ -15,54 +15,6 @@ const PALETTE = {
   bg: '#06090e',
 };
 
-// --- 0. Robust Auto-Resize Handler for Dynamic WebGL Viewport ---
-function CanvasResizeHandler() {
-  const { gl, camera } = useThree();
-
-  useEffect(() => {
-    const updateSize = () => {
-      const parent = gl.domElement.parentElement;
-      if (parent) {
-        const width = parent.clientWidth;
-        const height = parent.clientHeight;
-        if (width > 0 && height > 0) {
-          gl.setSize(width, height, false);
-          if (camera instanceof THREE.PerspectiveCamera) {
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-          }
-        }
-      }
-    };
-
-    // Run immediately and schedule trailing checks for post-hydration layout shifts
-    updateSize();
-    const t1 = setTimeout(updateSize, 30);
-    const t2 = setTimeout(updateSize, 120);
-    const t3 = setTimeout(updateSize, 350);
-
-    const resizeObserver = new ResizeObserver(() => {
-      updateSize();
-    });
-
-    if (gl.domElement.parentElement) {
-      resizeObserver.observe(gl.domElement.parentElement);
-    }
-
-    window.addEventListener('resize', updateSize);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', updateSize);
-    };
-  }, [gl, camera]);
-
-  return null;
-}
-
 // Procedural Terrain Height Calculation
 function getTerrainHeight(x: number, z: number): number {
   return Math.sin(x * 0.35) * Math.cos(z * 0.35) * 0.45 + Math.sin((x + z) * 0.22) * 0.3;
@@ -1014,6 +966,7 @@ function RadarSceneContent({
   hudStatusRef: React.RefObject<HTMLDivElement>;
 }) {
   const sweepRef = useRef(0);
+  const { size } = useThree();
 
   useFrame((state, delta) => {
     if (isReducedMotion) {
@@ -1034,7 +987,6 @@ function RadarSceneContent({
 
   return (
     <>
-      <CanvasResizeHandler />
       <CameraRig startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
       <HUDPhaseController
         startTimeRef={startTimeRef}
@@ -1063,7 +1015,11 @@ function RadarSceneContent({
 
       <FloatingDust />
 
-      <EffectComposer enableNormalPass={false}>
+      {/* Synchronize EffectComposer render targets to current viewport size */}
+      <EffectComposer
+        key={`${Math.round(size.width)}-${Math.round(size.height)}`}
+        enableNormalPass={false}
+      >
         <Bloom
           intensity={1.1}
           luminanceThreshold={0.25}
@@ -1161,11 +1117,10 @@ export default function XolsecHeroScene() {
 
       {/* Three.js R3F Canvas Container */}
       <Canvas
-        className="absolute inset-0 !w-full !h-full"
+        className="absolute inset-0 w-full h-full"
         camera={{ position: [0, 0.2, 7.2], fov: 45 }}
         dpr={[1, 2]}
         frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
-        resize={{ scroll: false, debounce: 0 }}
         gl={{
           antialias: true,
           alpha: true,
