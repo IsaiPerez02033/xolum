@@ -15,7 +15,6 @@
     "@react-three/fiber": "^8.18.0",
     "@react-three/postprocessing": "^2.19.1",
     "@types/three": "^0.185.4",
-    "gsap": "^3.12.5",
     "motion": "^11.11.17",
     "next": "14.2.18",
     "postprocessing": "^6.39.4",

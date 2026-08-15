@@ -29,6 +29,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
+    // Señala que React hidrató: desactiva la red de seguridad estática del
+    // layout (que fuerza visibilidad si el JS no corre en 4s) y la retira si
+    // ya se había activado en un dispositivo lento.
+    const root = document.documentElement;
+    root.setAttribute('data-hydrated', 'true');
+    root.classList.remove('static-fallback');
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
       const initial: Theme = saved && ['dark', 'light', 'system'].includes(saved) ? saved : 'dark';

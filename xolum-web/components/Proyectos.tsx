@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { proyectos } from '@/lib/data';
 import { Reveal } from './Reveal';
 
@@ -25,11 +26,14 @@ function LogoTile({ p }: { p: Proyecto }) {
             {p.word}
           </span>
         ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          // next/image sirve AVIF/WebP a navegadores modernos y el original a
+          // los viejos; en móvil con conexión lenta baja mucho menos peso.
+          <Image
             src={p.logo!}
             alt={p.nombre}
-            loading="lazy"
+            width={252}
+            height={160}
+            sizes="252px"
             className="max-h-full max-w-full object-contain opacity-90 transition-opacity duration-500 group-hover:opacity-100"
           />
         )}
@@ -76,7 +80,10 @@ export function Proyectos() {
 
       <div
         className="flex flex-col gap-5"
-        style={{ maskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)' }}
+        style={{
+          WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)',
+          maskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)',
+        }}
       >
         <Row items={[...proyectos]} />
         <Row items={[...proyectos].reverse()} reverse />

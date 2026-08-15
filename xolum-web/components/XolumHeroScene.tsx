@@ -614,7 +614,7 @@ export default function XolumHeroScene() {
           <Canvas
             className="absolute inset-0 w-full h-full"
             camera={{ position: [0, 4.5, 12.0], fov: 40 }}
-            dpr={[1, 2]}
+            dpr={[1, 1.5]}
             frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
             gl={{
               antialias: true,

@@ -30,7 +30,7 @@ export function XolsecNav() {
           </a>
 
           <div className="flex items-center gap-3">
-            <a href="/" className="hidden items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-[var(--text-soft)] transition-colors hover:text-[var(--text)] sm:flex">
+            <a href="/" className="hidden items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-[var(--text-soft)] transition-colors hover:text-[var(--text)] sm:flex">
               <ArrowLeft size={15} weight="bold" />
               Volver a XOLUM
             </a>

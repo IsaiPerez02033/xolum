@@ -1177,7 +1177,7 @@ export default function XolsecHeroScene() {
       <Canvas
         className="absolute inset-0 w-full h-full"
         camera={{ position: [0, 0.2, 7.2], fov: 40 }}
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
         frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
         gl={{
           antialias: true,

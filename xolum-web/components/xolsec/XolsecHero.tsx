@@ -3,6 +3,8 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { ArrowRight, ShieldCheck } from '@phosphor-icons/react';
 import dynamic from 'next/dynamic';
+import { ScenePoster } from '../ScenePoster';
+import { useDeviceCapabilities } from '@/lib/capabilities';
 import { waLink } from '@/lib/data';
 
 const XolsecHeroScene = dynamic(() => import('./XolsecHeroScene'), {
@@ -16,6 +18,7 @@ const XolsecHeroScene = dynamic(() => import('./XolsecHeroScene'), {
 
 export function XolsecHero() {
   const reduce = useReducedMotion();
+  const { heavy3D } = useDeviceCapabilities();
   const rise = (d: number) => ({
     initial: reduce ? {} : { opacity: 0, y: 24 },
     animate: { opacity: 1, y: 0 },
@@ -23,7 +26,7 @@ export function XolsecHero() {
   });
 
   return (
-    <section id="top" className="relative min-h-[100dvh] overflow-hidden pt-24">
+    <section id="top" className="relative min-h-dvh overflow-hidden pt-24">
       <div className="absolute inset-0 tech-grid opacity-60" aria-hidden />
       <div
         className="pointer-events-none absolute inset-0 opacity-70"
@@ -33,7 +36,7 @@ export function XolsecHero() {
       {/* Barrido superior tipo cámara nocturna */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 animate-scanline bg-gradient-to-b from-emerald-400/10 to-transparent" aria-hidden />
 
-      <div className="shell relative z-10 grid min-h-[calc(100dvh-6rem)] grid-cols-1 items-center gap-10 pb-16 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="shell relative z-10 grid min-h-dvh-nav grid-cols-1 items-center gap-10 pb-16 lg:grid-cols-[1.05fr_0.95fr]">
         <div className="max-w-2xl">
           <motion.div {...rise(0)} className="chip mb-6 border-emerald-400/30 text-emerald-300">
             <ShieldCheck size={14} weight="fill" />
@@ -68,7 +71,7 @@ export function XolsecHero() {
           transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
           className="relative mx-auto hidden aspect-square w-full max-w-[520px] lg:block"
         >
-          <XolsecHeroScene />
+          {heavy3D ? <XolsecHeroScene /> : <ScenePoster variant="radar" />}
         </motion.div>
       </div>
     </section>

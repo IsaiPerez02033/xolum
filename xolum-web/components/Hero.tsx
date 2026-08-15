@@ -6,6 +6,8 @@ import { ArrowRight, Sparkle } from '@phosphor-icons/react';
 import dynamic from 'next/dynamic';
 import { NetworkCanvas } from './NetworkCanvas';
 import { MagneticButton } from './MagneticButton';
+import { ScenePoster } from './ScenePoster';
+import { useDeviceCapabilities } from '@/lib/capabilities';
 import { waLink } from '@/lib/data';
 
 const XolumHeroScene = dynamic(() => import('./XolumHeroScene'), {
@@ -20,6 +22,7 @@ const XolumHeroScene = dynamic(() => import('./XolumHeroScene'), {
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const { heavy3D, ambient } = useDeviceCapabilities();
 
   // Mouse tracking for Spotlight & Multi-layer Parallax
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -32,9 +35,15 @@ export function Hero() {
   const heroCardY = useTransform(scrollY, [0, 800], [0, -110]);
   const heroBgOpacity = useTransform(scrollY, [0, 600], [1, 0.25]);
   const cardScrollRotate = useTransform(scrollY, [0, 800], [0, 5]);
+  // Hoisted (no puede ir dentro de un render condicional por reglas de hooks).
+  const gridParallaxY = useTransform(scrollY, [0, 800], [0, -30]);
+  const networkParallaxY = useTransform(scrollY, [0, 800], [0, -45]);
 
   useEffect(() => {
     if (reduce) return;
+    // El parallax por cursor sólo tiene sentido con puntero fino (mouse/trackpad).
+    // En táctil evitamos un loop rAF permanente que gasta batería sin efecto.
+    if (typeof window !== 'undefined' && !window.matchMedia('(pointer: fine)').matches) return;
 
     let rafId: number;
     const animateParallax = () => {
@@ -75,7 +84,7 @@ export function Hero() {
       id="top"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative min-h-[100dvh] overflow-hidden pt-24 select-none"
+      className="relative min-h-dvh overflow-hidden pt-24 select-none"
     >
       {/* LAYER 0: Dynamic Cursor Spotlight Glow */}
       <div
@@ -89,7 +98,7 @@ export function Hero() {
 
       {/* LAYER 1: Tech Grid with Parallax */}
       <motion.div
-        style={{ opacity: heroBgOpacity, y: useTransform(scrollY, [0, 800], [0, -30]) }}
+        style={{ opacity: heroBgOpacity, y: gridParallaxY }}
         className="absolute inset-0 z-0"
       >
         <div
@@ -103,22 +112,24 @@ export function Hero() {
         />
       </motion.div>
 
-      {/* LAYER 2: Live Network Canvas with Parallax */}
-      <motion.div
-        style={{ opacity: heroBgOpacity, y: useTransform(scrollY, [0, 800], [0, -45]) }}
-        className="absolute inset-0 opacity-70 z-0"
-      >
-        <div
-          className="w-full h-full transition-transform duration-300 ease-out"
-          style={{
-            transform: reduce
-              ? 'none'
-              : `translate3d(${lerpMouse.current.x * -18}px, ${lerpMouse.current.y * -18}px, 0)`,
-          }}
+      {/* LAYER 2: Live Network Canvas with Parallax (sólo en equipos capaces) */}
+      {ambient && (
+        <motion.div
+          style={{ opacity: heroBgOpacity, y: networkParallaxY }}
+          className="absolute inset-0 opacity-70 z-0"
         >
-          <NetworkCanvas />
-        </div>
-      </motion.div>
+          <div
+            className="w-full h-full transition-transform duration-300 ease-out"
+            style={{
+              transform: reduce
+                ? 'none'
+                : `translate3d(${lerpMouse.current.x * -18}px, ${lerpMouse.current.y * -18}px, 0)`,
+            }}
+          >
+            <NetworkCanvas />
+          </div>
+        </motion.div>
+      )}
 
       {/* LAYER 3: Aurora Glow with Parallax */}
       <div
@@ -133,7 +144,7 @@ export function Hero() {
         aria-hidden
       />
 
-      <div className="shell relative z-10 grid min-h-[calc(100dvh-6rem)] grid-cols-1 items-center gap-10 pb-16 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="shell relative z-10 grid min-h-dvh-nav grid-cols-1 items-center gap-10 pb-16 lg:grid-cols-[1.05fr_0.95fr]">
         {/* LAYER 4: Content Column (Text, Chip, Buttons) */}
         <motion.div
           style={{ y: heroContentY }}
@@ -205,7 +216,7 @@ export function Hero() {
             }}
             className="w-full h-full"
           >
-            <XolumHeroScene />
+            {heavy3D ? <XolumHeroScene /> : <ScenePoster variant="core" />}
           </div>
         </motion.div>
       </div>
