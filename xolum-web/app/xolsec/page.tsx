@@ -15,8 +15,10 @@ export const metadata: Metadata = {
 };
 
 export default function XolsecPage() {
+  // XOLSEC conserva su identidad "night-vision": se mantiene en paleta oscura
+  // aunque el sitio esté en modo claro (isla .stage-dark).
   return (
-    <>
+    <div className="stage-dark">
       <XolsecNav />
       <main>
         <XolsecHero />
@@ -27,6 +29,6 @@ export default function XolsecPage() {
         <XolsecCTA />
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

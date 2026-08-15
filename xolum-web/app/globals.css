@@ -61,7 +61,23 @@
   --grid-line: rgba(9, 20, 40, 0.05);
   --glass-shadow: 0 18px 44px -24px rgba(15, 23, 42, 0.28);
   --glass-highlight: rgba(255, 255, 255, 0.9);
+  /* Gradiente de marca más profundo para que lea sobre fondo claro */
+  --grad-brand: linear-gradient(115deg, #06b6d4 0%, #0891b2 45%, #0e7490 62%, #059669 100%);
 }
+
+/* Los acentos cyan/esmeralda claros (afinados para dark) pierden contraste
+   sobre fondo claro: se profundizan en modo claro, salvo dentro de islas
+   oscuras (.stage-dark), que conservan los tonos brillantes. */
+:root.light .text-brand-300 { color: #0e7490; }
+:root.light .text-brand-200 { color: #0e7490; }
+:root.light .text-brand-100 { color: #155e75; }
+:root.light .text-emerald-400 { color: #059669; }
+:root.light .text-emerald-300 { color: #047857; }
+:root.light .stage-dark .text-brand-300 { color: #67e8f9; }
+:root.light .stage-dark .text-brand-200 { color: #a5f3fc; }
+:root.light .stage-dark .text-brand-100 { color: #cffafe; }
+:root.light .stage-dark .text-emerald-400 { color: #34d399; }
+:root.light .stage-dark .text-emerald-300 { color: #6ee7b7; }
 
 * {
   border-color: var(--border);
@@ -84,7 +100,10 @@
   --text-muted: #6b7891;
   --grid-line: rgba(255, 255, 255, 0.035);
   --glass-highlight: rgba(255, 255, 255, 0.06);
+  --footer-bg: #04070b;
+  --grad-brand: linear-gradient(115deg, #00f2fe 0%, #22d3ee 32%, #06b6d4 60%, #10b981 100%);
   color: var(--text);
+  background: var(--bg);
 }
 
 html {
