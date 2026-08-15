@@ -15,7 +15,7 @@ export function XolsecTeaser() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="group relative block overflow-hidden rounded-[2rem] border border-white/10 bg-[#03060a]"
+          className="group relative block overflow-hidden rounded-[2rem] border border-[var(--hair)] bg-[#03060a]"
         >
           {/* Fondo: night-vision + barrido de escaneo */}
           <div className="absolute inset-0 tech-grid opacity-40" aria-hidden />

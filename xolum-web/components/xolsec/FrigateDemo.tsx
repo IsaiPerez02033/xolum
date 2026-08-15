@@ -57,7 +57,7 @@ export function FrigateDemo() {
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-5xl">{xolsec.frigate.titulo}</h2>
           <p className="mt-6 max-w-[56ch] text-lg leading-relaxed text-[var(--text-soft)]">{xolsec.frigate.desc}</p>
 
-          <dl className="mt-10 grid grid-cols-3 gap-6 border-t border-white/8 pt-8">
+          <dl className="mt-10 grid grid-cols-3 gap-6 border-t border-[var(--hair)] pt-8">
             <div>
               <dt className="grad-text text-3xl font-extrabold">&lt; 3 s</dt>
               <dd className="mt-1 text-xs text-[var(--text-muted)]">de detección a alerta</dd>
@@ -76,8 +76,8 @@ export function FrigateDemo() {
         {/* Feed de alertas estilo mensajería */}
         <div ref={ref} className="relative mx-auto w-full max-w-[400px]">
           <div className="pointer-events-none absolute -inset-5 rounded-[2.4rem] bg-gradient-to-b from-emerald-500/15 to-brand-500/10 blur-2xl" aria-hidden />
-          <div className="glass relative overflow-hidden rounded-[2rem] border border-white/12">
-            <div className="flex items-center gap-3 border-b border-white/10 bg-white/[0.03] px-5 py-3.5">
+          <div className="glass relative overflow-hidden rounded-[2rem] border border-[var(--hair-strong)]">
+            <div className="flex items-center gap-3 border-b border-[var(--hair)] bg-[var(--surface)] px-5 py-3.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300">
                 <PaperPlaneTilt size={18} weight="fill" />
               </div>

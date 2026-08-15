@@ -27,20 +27,20 @@ export function XolsecCatalogo() {
         <div className="mt-12 flex snap-x gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:overflow-visible lg:grid-cols-5">
           {xolsec.camaras.map((c, i) => (
             <Reveal key={c.nombre} delay={(i % 5) * 0.06} className="min-w-[240px] snap-start md:min-w-0">
-              <article className="group relative h-full overflow-hidden rounded-2xl border border-white/8 bg-white/[0.02] p-6 transition-all duration-300 hover:border-emerald-400/40 hover:bg-white/[0.04]">
+              <article className="group relative h-full overflow-hidden rounded-2xl border border-[var(--hair)] bg-[var(--surface)] p-6 transition-all duration-300 hover:border-emerald-400/40 hover:bg-[var(--surface)]">
                 <div
                   className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
                   style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.4), transparent 70%)' }}
                   aria-hidden
                 />
-                <div className="relative mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-emerald-300 transition-transform duration-300 group-hover:scale-110">
+                <div className="relative mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--hair)] bg-[var(--surface-2)] text-emerald-300 transition-transform duration-300 group-hover:scale-110">
                   <Icon name={c.icon} size={24} weight="duotone" />
                 </div>
                 <h3 className="relative text-lg font-bold">{c.nombre}</h3>
                 <p className="relative mt-2 text-sm leading-relaxed text-[var(--text-soft)]">{c.desc}</p>
                 <ul className="relative mt-4 flex flex-wrap gap-1.5">
                   {c.specs.map((s) => (
-                    <li key={s} className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-0.5 font-mono text-[10.5px] text-[var(--text-muted)]">
+                    <li key={s} className="rounded-md border border-[var(--hair)] bg-[var(--surface)] px-2 py-0.5 font-mono text-[10.5px] text-[var(--text-muted)]">
                       {s}
                     </li>
                   ))}
@@ -52,12 +52,12 @@ export function XolsecCatalogo() {
 
         {/* Nota de grabación / NVR */}
         <Reveal delay={0.1}>
-          <div className="mt-4 flex items-center gap-4 rounded-2xl border border-white/8 bg-[var(--bg-elevated)]/40 px-6 py-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-brand-300">
+          <div className="mt-4 flex items-center gap-4 rounded-2xl border border-[var(--hair)] bg-[var(--bg-elevated)]/40 px-6 py-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--hair)] bg-[var(--surface-2)] text-brand-300">
               <HardDrives size={22} weight="duotone" />
             </div>
             <p className="text-sm leading-relaxed text-[var(--text-soft)]">
-              Todo se integra con <span className="font-semibold text-white">grabación en NVR</span> y monitoreo desde tu celular. Nosotros instalamos, configuramos y dejamos el acceso remoto listo desde el primer día.
+              Todo se integra con <span className="font-semibold text-[var(--text)]">grabación en NVR</span> y monitoreo desde tu celular. Nosotros instalamos, configuramos y dejamos el acceso remoto listo desde el primer día.
             </p>
           </div>
         </Reveal>

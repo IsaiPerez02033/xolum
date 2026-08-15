@@ -67,7 +67,7 @@ function ChatWindow({ chat, botName }: { chat: readonly Msg[]; botName: string }
   return (
     <div ref={ref} className="flex h-full flex-col">
       {/* Encabezado estilo WhatsApp */}
-      <div className="flex items-center gap-3 border-b border-white/10 bg-white/[0.03] px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-[var(--hair)] bg-[var(--surface)] px-4 py-3">
         <div className="grad-surface flex h-9 w-9 items-center justify-center rounded-full text-[#04121a]">
           <WhatsappLogo size={20} weight="fill" />
         </div>
@@ -88,7 +88,7 @@ function ChatWindow({ chat, botName }: { chat: readonly Msg[]; botName: string }
             className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-snug ${
               m.de === 'user'
                 ? 'self-end rounded-br-md bg-[#0b3b34] text-emerald-50'
-                : 'self-start rounded-bl-md border border-white/10 bg-white/[0.05] text-[var(--text)]'
+                : 'self-start rounded-bl-md border border-[var(--hair)] bg-[var(--surface)] text-[var(--text)]'
             }`}
           >
             {m.texto}
@@ -100,7 +100,7 @@ function ChatWindow({ chat, botName }: { chat: readonly Msg[]; botName: string }
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="flex items-center gap-1 self-start rounded-2xl rounded-bl-md border border-white/10 bg-white/[0.05] px-3.5 py-3"
+              className="flex items-center gap-1 self-start rounded-2xl rounded-bl-md border border-[var(--hair)] bg-[var(--surface)] px-3.5 py-3"
             >
               {[0, 1, 2].map((d) => (
                 <span
@@ -146,7 +146,7 @@ export function BotsShowcase() {
                   className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
                     i === active
                       ? 'border-brand-400/60 bg-brand-500/10 text-white'
-                      : 'border-white/10 text-[var(--text-muted)] hover:border-white/25 hover:text-white'
+                      : 'border-[var(--hair)] text-[var(--text-muted)] hover:border-[var(--hair-strong)] hover:text-[var(--text)]'
                   }`}
                 >
                   {b.nombre}
@@ -181,7 +181,7 @@ export function BotsShowcase() {
           {/* Derecha: teléfono con chat en vivo */}
           <div className="relative mx-auto w-full max-w-[360px]">
             <div className="pointer-events-none absolute -inset-6 rounded-[3rem] bg-gradient-to-b from-brand-500/20 to-emerald-500/10 blur-2xl" aria-hidden />
-            <div className="glass relative overflow-hidden rounded-[2.4rem] border border-white/12 p-2 shadow-2xl">
+            <div className="glass relative overflow-hidden rounded-[2.4rem] border border-[var(--hair-strong)] p-2 shadow-2xl">
               <div className="relative h-[520px] overflow-hidden rounded-[2rem] bg-[#070b10]">
                 <ChatWindow chat={bot.chat} botName={bot.nombre} />
               </div>

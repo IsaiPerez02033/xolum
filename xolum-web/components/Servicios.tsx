@@ -18,12 +18,12 @@ export function Servicios() {
           {servicios.map((s, i) => (
             <Reveal key={s.titulo} delay={i * 0.1}>
               <article className="group glass relative flex h-full flex-col rounded-3xl p-8 transition-transform duration-300 hover:-translate-y-1.5">
-                <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-brand-300 transition-colors group-hover:border-brand-500/40">
+                <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--hair)] bg-[var(--surface-2)] text-brand-300 transition-colors group-hover:border-brand-500/40">
                   <Icon name={s.icon} size={26} weight="duotone" />
                 </div>
                 <h3 className="text-xl font-bold">{s.titulo}</h3>
                 <p className="mt-3 flex-1 text-[15px] leading-relaxed text-[var(--text-soft)]">{s.desc}</p>
-                <ul className="mt-6 space-y-2.5 border-t border-white/8 pt-6">
+                <ul className="mt-6 space-y-2.5 border-t border-[var(--hair)] pt-6">
                   {s.puntos.map((p) => (
                     <li key={p} className="flex items-center gap-2.5 text-sm text-[var(--text-soft)]">
                       <Check size={16} weight="bold" className="shrink-0 text-emerald-400" />

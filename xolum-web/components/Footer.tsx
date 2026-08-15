@@ -4,7 +4,7 @@ import { WhatsappLogo, EnvelopeSimple, MapPin } from '@phosphor-icons/react/dist
 
 export function Footer() {
   return (
-    <footer className="relative border-t border-white/8 bg-[#04070b] pb-10 pt-16">
+    <footer className="relative border-t border-[var(--hair)] bg-[var(--footer-bg)] pb-10 pt-16">
       <div className="shell">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr]">
           <div>
@@ -18,25 +18,25 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-white">Navegación</h3>
+            <h3 className="text-sm font-semibold text-[var(--text)]">Navegación</h3>
             <ul className="mt-4 space-y-2.5 text-sm text-[var(--text-muted)]">
-              <li><a href="/#servicios" className="hover:text-white">Servicios</a></li>
-              <li><a href="/#bots" className="hover:text-white">Bots con IA</a></li>
-              <li><a href="/#proyectos" className="hover:text-white">Proyectos</a></li>
-              <li><a href="/xolsec" className="hover:text-white">XOLSEC · Seguridad</a></li>
+              <li><a href="/#servicios" className="hover:text-[var(--text)]">Servicios</a></li>
+              <li><a href="/#bots" className="hover:text-[var(--text)]">Bots con IA</a></li>
+              <li><a href="/#proyectos" className="hover:text-[var(--text)]">Proyectos</a></li>
+              <li><a href="/xolsec" className="hover:text-[var(--text)]">XOLSEC · Seguridad</a></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-white">Contacto</h3>
+            <h3 className="text-sm font-semibold text-[var(--text)]">Contacto</h3>
             <ul className="mt-4 space-y-3 text-sm text-[var(--text-muted)]">
               <li>
-                <a href={waLink('Hola XOLUM.')} target="_blank" rel="noreferrer" className="flex items-center gap-2.5 hover:text-white">
+                <a href={waLink('Hola XOLUM.')} target="_blank" rel="noreferrer" className="flex items-center gap-2.5 hover:text-[var(--text)]">
                   <WhatsappLogo size={17} weight="fill" className="text-emerald-400" /> WhatsApp
                 </a>
               </li>
               <li>
-                <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-2.5 hover:text-white">
+                <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-2.5 hover:text-[var(--text)]">
                   <EnvelopeSimple size={17} /> {CONTACT.email}
                 </a>
               </li>

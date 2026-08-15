@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { List, X } from '@phosphor-icons/react';
 import { waLink } from '@/lib/data';
+import { ThemeToggle } from './ThemeToggle';
 
 const links = [
   { href: '/#servicios', label: 'Servicios' },
@@ -42,7 +43,7 @@ export function Nav() {
               <a
                 key={l.href}
                 href={l.href}
-                className={`rounded-full px-4 py-2 text-sm font-medium text-[var(--text-soft)] transition-colors hover:text-white ${
+                className={`rounded-full px-4 py-2 text-sm font-medium text-[var(--text-soft)] transition-colors hover:text-[var(--text)] ${
                   l.label === 'XOLSEC' ? 'grad-text font-semibold' : ''
                 }`}
               >
@@ -51,21 +52,25 @@ export function Nav() {
             ))}
           </div>
 
-          <div className="hidden lg:block">
+          <div className="hidden items-center gap-2.5 lg:flex">
+            <ThemeToggle />
             <a href={waLink('Hola XOLUM, quiero información sobre sus servicios.')} target="_blank" rel="noreferrer" className="btn-brand text-sm">
               Agenda una llamada
             </a>
           </div>
 
-          <button className="lg:hidden" onClick={() => setOpen((v) => !v)} aria-label="Menú">
-            {open ? <X size={24} /> : <List size={24} />}
-          </button>
+          <div className="flex items-center gap-2 lg:hidden">
+            <ThemeToggle />
+            <button onClick={() => setOpen((v) => !v)} aria-label="Menú">
+              {open ? <X size={24} /> : <List size={24} />}
+            </button>
+          </div>
         </nav>
 
         {open && (
           <div className="glass mt-2 flex flex-col gap-1 rounded-2xl p-3 lg:hidden">
             {links.map((l) => (
-              <a key={l.href} href={l.href} onClick={() => setOpen(false)} className="rounded-xl px-4 py-3 text-[var(--text-soft)] hover:bg-white/5 hover:text-white">
+              <a key={l.href} href={l.href} onClick={() => setOpen(false)} className="rounded-xl px-4 py-3 text-[var(--text-soft)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]">
                 {l.label}
               </a>
             ))}

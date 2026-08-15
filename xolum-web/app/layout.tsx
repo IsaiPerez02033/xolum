@@ -1,6 +1,10 @@
 import type { Metadata } from 'next';
 import { sans, mono } from '@/lib/fonts';
+import { ThemeProvider } from '@/lib/theme';
 import './globals.css';
+
+// Se ejecuta antes del primer paint para aplicar el tema guardado sin parpadeo.
+const themeScript = `(function(){try{var s=localStorage.getItem('xolum-theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var a=(s==='light'||(s==='system'&&!d))?'light':'dark';var r=document.documentElement;r.classList.add(a);r.style.colorScheme=a;}catch(e){document.documentElement.classList.add('dark');}})();`;
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://xolum.mx'),
@@ -35,10 +39,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`${sans.variable} ${mono.variable}`}>
+    <html lang="es" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
-        <div className="noise" aria-hidden />
-        {children}
+        <ThemeProvider>
+          <div className="noise" aria-hidden />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

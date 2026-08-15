@@ -63,7 +63,7 @@ export function Nosotros() {
           ].map((item, i) => (
             <Reveal key={item.label} delay={i * 0.1}>
               <article className="group glass flex h-full flex-col rounded-3xl p-8 transition-transform duration-300 hover:-translate-y-1.5">
-                <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-brand-300 transition-colors group-hover:border-brand-500/40">
+                <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--hair)] bg-[var(--surface-2)] text-brand-300 transition-colors group-hover:border-brand-500/40">
                   <item.icon size={26} weight="duotone" />
                 </div>
                 <h3 className="font-mono text-xs uppercase tracking-[0.22em] text-brand-300">{item.label}</h3>
@@ -79,10 +79,10 @@ export function Nosotros() {
             const V = valorIcons[v.icon] ?? Sparkle;
             return (
               <Reveal key={v.t} delay={i * 0.08}>
-                <div className="flex h-full items-start gap-4 rounded-2xl border border-white/8 bg-white/[0.02] p-6">
+                <div className="flex h-full items-start gap-4 rounded-2xl border border-[var(--hair)] bg-[var(--surface)] p-6">
                   <V size={22} weight="duotone" className="mt-0.5 shrink-0 text-emerald-400" />
                   <div>
-                    <h4 className="text-[15px] font-semibold text-white">{v.t}</h4>
+                    <h4 className="text-[15px] font-semibold text-[var(--text)]">{v.t}</h4>
                     <p className="mt-1.5 text-sm leading-relaxed text-[var(--text-soft)]">{v.d}</p>
                   </div>
                 </div>

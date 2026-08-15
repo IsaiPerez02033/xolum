@@ -4,7 +4,7 @@ import { Reveal } from './Reveal';
 
 export function Stats() {
   return (
-    <section className="relative border-y border-white/5 bg-[var(--bg-elevated)]/40 py-14">
+    <section className="relative border-y border-[var(--hair)] bg-[var(--bg-elevated)]/40 py-14">
       <div className="shell grid grid-cols-2 gap-8 lg:grid-cols-4">
         {stats.map((s, i) => (
           <Reveal key={s.label} delay={i * 0.08}>

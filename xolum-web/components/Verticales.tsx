@@ -4,7 +4,7 @@ import { Reveal } from './Reveal';
 
 export function Verticales() {
   return (
-    <section className="relative border-y border-white/5 bg-[var(--bg-elevated)]/30 py-24 sm:py-28">
+    <section className="relative border-y border-[var(--hair)] bg-[var(--bg-elevated)]/30 py-24 sm:py-28">
       <div className="shell">
         <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
           <Reveal>
@@ -21,7 +21,7 @@ export function Verticales() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {verticales.map((v, i) => (
               <Reveal key={v.nombre} delay={(i % 4) * 0.06}>
-                <div className="group h-full rounded-2xl border border-white/8 bg-white/[0.02] p-5 transition-all duration-300 hover:border-brand-500/40 hover:bg-white/[0.04]">
+                <div className="group h-full rounded-2xl border border-[var(--hair)] bg-[var(--surface)] p-5 transition-all duration-300 hover:border-brand-500/40 hover:bg-[var(--surface)]">
                   <Icon name={v.icon} size={24} weight="duotone" className="text-brand-300 transition-transform duration-300 group-hover:scale-110" />
                   <h3 className="mt-4 text-sm font-semibold leading-tight">{v.nombre}</h3>
                   <p className="mt-1.5 text-xs leading-snug text-[var(--text-muted)]">{v.desc}</p>

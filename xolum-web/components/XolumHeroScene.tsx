@@ -72,6 +72,7 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
   const outerRef = useRef<THREE.Mesh>(null!);
   const innerPolyRef = useRef<THREE.Mesh>(null!);
   const coreSphereRef = useRef<THREE.Mesh>(null!);
+  const lightRef = useRef<THREE.PointLight>(null!);
 
   const { outerGeo, innerPolyGeo, sphereGeo } = useMemo(() => {
     const outer = new THREE.IcosahedronGeometry(1.65, 1);
@@ -96,8 +97,14 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
     }
 
     if (coreSphereRef.current) {
-      const scale = 1.0 + Math.sin(t * 2.2) * 0.06;
+      const breath = Math.sin(t * 1.6);
+      const scale = 1.0 + breath * 0.05;
       coreSphereRef.current.scale.set(scale, scale, scale);
+    }
+
+    if (lightRef.current) {
+      const breath = Math.sin(t * 1.6);
+      lightRef.current.intensity = 2.2 + breath * 0.35;
     }
   });
 
@@ -131,7 +138,7 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
         />
       </mesh>
 
-      <pointLight color={PALETTE.cyan} intensity={2.2} distance={8} />
+      <pointLight ref={lightRef} color={PALETTE.cyan} intensity={2.2} distance={8} />
     </group>
   );
 }
@@ -440,6 +447,17 @@ export default function XolumHeroScene() {
   const [isInView, setIsInView] = useState(true);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
 
+  // Live OS Telemetry state
+  const [latency, setLatency] = useState(12);
+  const [nodesCount, setNodesCount] = useState(22);
+  const [aiState, setAiState] = useState<'ACTIVE' | 'PROCESSING' | 'OPTIMIZED'>('ACTIVE');
+  const [statusPulse, setStatusPulse] = useState(true);
+
+  // 3D Card tilt lerp state
+  const targetRotation = useRef({ x: 0, y: 0 });
+  const currentRotation = useRef({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLDivElement>(null!);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -467,54 +485,155 @@ export default function XolumHeroScene() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  // Live System OS Telemetry updates (subtle, non-repetitive micro changes)
+  useEffect(() => {
+    const latencyInterval = setInterval(() => {
+      // Jitter latency between 10ms and 14ms
+      setLatency(10 + Math.floor(Math.random() * 5));
+    }, 2800);
+
+    const nodesInterval = setInterval(() => {
+      // Fluctuate node count between 22 and 24
+      setNodesCount(22 + (Math.random() > 0.6 ? 1 : 0));
+    }, 4200);
+
+    const aiInterval = setInterval(() => {
+      const states: ('ACTIVE' | 'PROCESSING' | 'OPTIMIZED')[] = ['ACTIVE', 'OPTIMIZED', 'ACTIVE', 'PROCESSING'];
+      setAiState(states[Math.floor(Math.random() * states.length)]);
+    }, 5500);
+
+    const pulseInterval = setInterval(() => {
+      setStatusPulse((prev) => !prev);
+    }, 1800);
+
+    return () => {
+      clearInterval(latencyInterval);
+      clearInterval(nodesInterval);
+      clearInterval(aiInterval);
+      clearInterval(pulseInterval);
+    };
+  }, []);
+
+  // 3D Tilt RAF loop
+  useEffect(() => {
+    if (isReducedMotion) return;
+
+    let rafId: number;
+    const animateTilt = () => {
+      currentRotation.current.x += (targetRotation.current.x - currentRotation.current.x) * 0.08;
+      currentRotation.current.y += (targetRotation.current.y - currentRotation.current.y) * 0.08;
+
+      if (cardRef.current) {
+        cardRef.current.style.transform = `perspective(1000px) rotateX(${currentRotation.current.x.toFixed(3)}deg) rotateY(${currentRotation.current.y.toFixed(3)}deg)`;
+      }
+
+      rafId = requestAnimationFrame(animateTilt);
+    };
+
+    animateTilt();
+    return () => cancelAnimationFrame(rafId);
+  }, [isReducedMotion]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isReducedMotion || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const normX = (e.clientX - centerX) / (rect.width / 2);
+    const normY = (e.clientY - centerY) / (rect.height / 2);
+
+    // Max 3.2 degrees pitch and roll tilt
+    targetRotation.current = {
+      x: -normY * 3.2,
+      y: normX * 3.2,
+    };
+  };
+
+  const handleMouseLeave = () => {
+    targetRotation.current = { x: 0, y: 0 };
+  };
+
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#22d3ee]/20 bg-[#06090e]/40 backdrop-blur-sm shadow-[0_0_50px_-15px_rgba(34,211,238,0.25)] select-none"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#22d3ee]/20 bg-[#06090e]/40 backdrop-blur-sm shadow-[0_0_50px_-15px_rgba(34,211,238,0.25)] select-none transition-shadow duration-300 hover:shadow-[0_0_60px_-10px_rgba(34,211,238,0.35)]"
+      style={{ perspective: '1000px' }}
     >
       <div
-        className="pointer-events-none absolute inset-0 z-20 opacity-30"
-        style={{
-          backgroundImage:
-            'repeating-linear-gradient(0deg, rgba(34, 211, 238, 0.08) 0px, rgba(34, 211, 238, 0.08) 1px, transparent 1px, transparent 4px)',
-        }}
-        aria-hidden
-      />
-
-      <div className="pointer-events-none absolute top-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[10px] text-[#22d3ee]/80 border-b border-[#22d3ee]/20 pb-1.5">
-        <div className="flex items-center gap-2 text-[#22d3ee]">
-          <span className="w-2 h-2 rounded-full bg-[#22d3ee] animate-pulse" />
-          <span className="font-bold tracking-widest">XOLUM // CORE v1.0</span>
-        </div>
-        <div className="tracking-widest text-[#10b981] font-semibold">STATUS: OPER</div>
-      </div>
-
-      <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[9px] text-[#22d3ee]/70">
-        <div>NODES: 22 // LATENCY: 12ms</div>
-        <div className="text-[#10b981]">AI_ENGINE: ACTIVE</div>
-      </div>
-
-      <Canvas
-        className="absolute inset-0 w-full h-full"
-        camera={{ position: [0, 4.5, 12.0], fov: 40 }}
-        dpr={[1, 2]}
-        frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
-        gl={{
-          antialias: true,
-          alpha: true,
-          powerPreference: 'high-performance',
-        }}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'transparent',
-        }}
+        ref={cardRef}
+        className="w-full h-full relative"
+        style={{ transformStyle: 'preserve-3d', transition: 'transform 0.05s ease-out' }}
       >
-        <ConstellationScene isReducedMotion={isReducedMotion} />
-      </Canvas>
+        {/* Layer A: Scanline texture */}
+        <div
+          className="pointer-events-none absolute inset-0 z-20 opacity-30"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(0deg, rgba(34, 211, 238, 0.08) 0px, rgba(34, 211, 238, 0.08) 1px, transparent 1px, transparent 4px)',
+            transform: 'translateZ(6px)',
+          }}
+          aria-hidden
+        />
+
+        {/* Layer B: Header Telemetry OS Bar */}
+        <div
+          className="pointer-events-none absolute top-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[10px] text-[#22d3ee]/80 border-b border-[#22d3ee]/20 pb-1.5"
+          style={{ transform: 'translateZ(20px)' }}
+        >
+          <div className="flex items-center gap-2 text-[#22d3ee]">
+            <span className={`w-2 h-2 rounded-full bg-[#22d3ee] ${statusPulse ? 'opacity-100 shadow-[0_0_8px_#22d3ee]' : 'opacity-60'} transition-opacity duration-300`} />
+            <span className="font-bold tracking-widest">XOLUM // CORE v1.0</span>
+          </div>
+          <div className="tracking-widest text-[#10b981] font-semibold flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
+            STATUS: OPER
+          </div>
+        </div>
+
+        {/* Layer C: Footer Telemetry OS Bar */}
+        <div
+          className="pointer-events-none absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[9px] text-[#22d3ee]/70"
+          style={{ transform: 'translateZ(20px)' }}
+        >
+          <div className="flex items-center gap-2">
+            <span>NODES: {nodesCount}</span>
+            <span className="opacity-40">//</span>
+            <span>LATENCY: {latency}ms</span>
+          </div>
+          <div className="text-[#10b981] font-semibold flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-[#10b981]" />
+            AI_ENGINE: {aiState}
+          </div>
+        </div>
+
+        {/* Layer D: 3D Canvas */}
+        <div style={{ transform: 'translateZ(10px)', width: '100%', height: '100%' }}>
+          <Canvas
+            className="absolute inset-0 w-full h-full"
+            camera={{ position: [0, 4.5, 12.0], fov: 40 }}
+            dpr={[1, 2]}
+            frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
+            gl={{
+              antialias: true,
+              alpha: true,
+              powerPreference: 'high-performance',
+            }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'transparent',
+            }}
+          >
+            <ConstellationScene isReducedMotion={isReducedMotion} />
+          </Canvas>
+        </div>
+      </div>
     </div>
   );
 }

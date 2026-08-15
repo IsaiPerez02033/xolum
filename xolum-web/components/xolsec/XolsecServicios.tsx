@@ -15,7 +15,7 @@ export function XolsecServicios() {
           {xolsec.servicios.map((s, i) => (
             <Reveal key={s.titulo} delay={(i % 2) * 0.08}>
               <article className="group glass flex h-full gap-5 rounded-3xl p-7 transition-transform duration-300 hover:-translate-y-1">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-emerald-300 transition-colors group-hover:border-emerald-400/40">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[var(--hair)] bg-[var(--surface-2)] text-emerald-300 transition-colors group-hover:border-emerald-400/40">
                   <Icon name={s.icon} size={26} weight="duotone" />
                 </div>
                 <div>

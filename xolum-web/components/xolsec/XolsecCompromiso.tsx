@@ -4,7 +4,7 @@ import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 
 export function XolsecCompromiso() {
   return (
-    <section className="relative border-y border-white/5 bg-[var(--bg-elevated)]/30 py-24 sm:py-28">
+    <section className="relative border-y border-[var(--hair)] bg-[var(--bg-elevated)]/30 py-24 sm:py-28">
       <div className="shell">
         <Reveal className="max-w-3xl">
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.22em] text-emerald-300">Más que vender cámaras</p>
@@ -16,7 +16,7 @@ export function XolsecCompromiso() {
         <div className="mt-14 grid gap-4 md:grid-cols-3">
           {xolsec.compromiso.map((c, i) => (
             <Reveal key={c.n} delay={i * 0.1}>
-              <div className="group relative h-full overflow-hidden rounded-3xl border border-white/8 bg-white/[0.02] p-8 transition-colors hover:border-emerald-400/30">
+              <div className="group relative h-full overflow-hidden rounded-3xl border border-[var(--hair)] bg-[var(--surface)] p-8 transition-colors hover:border-emerald-400/30">
                 <span className="grad-text font-mono text-5xl font-extrabold opacity-90">{c.n}</span>
                 <h3 className="mt-5 text-xl font-bold">{c.t}</h3>
                 <p className="mt-3 leading-relaxed text-[var(--text-soft)]">{c.d}</p>
