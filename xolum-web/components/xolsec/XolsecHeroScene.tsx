@@ -48,10 +48,10 @@ const NODES: DetectionNode[] = NODES_DATA.map((n) => ({
 
 // --- 1. Procedural 3D Terrain Grid Component ---
 function TerrainGrid({
-  startTimeRef,
+  accumTimeRef,
   isReducedMotion,
 }: {
-  startTimeRef: React.MutableRefObject<number>;
+  accumTimeRef: React.MutableRefObject<number>;
   isReducedMotion: boolean;
 }) {
   const baseMatRef = useRef<THREE.MeshBasicMaterial>(null!);
@@ -74,7 +74,6 @@ function TerrainGrid({
     }
     planeGeo.computeVertexNormals();
 
-    // Radar Concentric Circles on Ground Plane
     const ringsGroupGeo = new THREE.BufferGeometry();
     const ringVerts: number[] = [];
     const ringRadii = [3.0, 6.0, 9.0];
@@ -99,7 +98,7 @@ function TerrainGrid({
     return { geometry: planeGeo, ringsGeometry: ringsGroupGeo };
   }, []);
 
-  useFrame((state) => {
+  useFrame(() => {
     if (isReducedMotion) {
       if (baseMatRef.current) baseMatRef.current.opacity = 0.7;
       if (gridMatRef.current) gridMatRef.current.opacity = 0.22;
@@ -107,7 +106,7 @@ function TerrainGrid({
       return;
     }
 
-    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+    const elapsed = accumTimeRef.current;
     
     // FASE 1 y 2 (0.0s -> 4.8s): Terreno COMPLETAMENTE OCULTO (opacidad 0)
     // FASE 3 (4.8s -> 5.8s): Fade in suave del terreno cuando desaparece la cámara
@@ -123,12 +122,10 @@ function TerrainGrid({
 
   return (
     <group>
-      {/* Base terrain surface */}
       <mesh geometry={geometry}>
         <meshBasicMaterial ref={baseMatRef} color={PALETTE.bg} transparent opacity={0} side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Primary emerald wireframe grid */}
       <mesh geometry={geometry}>
         <meshBasicMaterial
           ref={gridMatRef}
@@ -140,7 +137,6 @@ function TerrainGrid({
         />
       </mesh>
 
-      {/* Radar concentric circles in cyan */}
       <lineSegments geometry={ringsGeometry}>
         <lineBasicMaterial ref={ringsMatRef} color={PALETTE.cyan} transparent opacity={0} linewidth={1} />
       </lineSegments>
@@ -150,10 +146,10 @@ function TerrainGrid({
 
 // --- 2. High-Detail PTZ Surveillance Camera Component ---
 function PTZCameraAssembly({
-  startTimeRef,
+  accumTimeRef,
   isReducedMotion,
 }: {
-  startTimeRef: React.MutableRefObject<number>;
+  accumTimeRef: React.MutableRefObject<number>;
   isReducedMotion: boolean;
 }) {
   const mainGroupRef = useRef<THREE.Group>(null!);
@@ -182,7 +178,6 @@ function PTZCameraAssembly({
   const reticleMatRef = useRef<THREE.LineBasicMaterial>(null!);
   const reticleRingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
 
-  // Geometrías memoizadas para lente y cuerpo PTZ realista
   const {
     mountGeo,
     housingGeo,
@@ -198,19 +193,15 @@ function PTZCameraAssembly({
     reticleRingGeo,
     reticleCrossGeo,
   } = useMemo(() => {
-    // 1) Montura / Brazo superior PTZ
     const mount = new THREE.CylinderGeometry(0.2, 0.32, 0.7, 24);
     mount.translate(0, 0.65, 0);
 
-    // 2) Carcasa cilíndrica principal
     const housing = new THREE.CylinderGeometry(0.6, 0.6, 0.7, 32);
     const housingSolid = new THREE.CylinderGeometry(0.58, 0.58, 0.68, 32);
 
-    // Domo esférico inferior
     const dome = new THREE.SphereGeometry(0.58, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.5);
     dome.rotateX(Math.PI);
 
-    // 3) LENTE ÓPTICA DE ALTA DEFINICIÓN
     const bezel = new THREE.TorusGeometry(0.36, 0.045, 20, 40);
     bezel.translate(0, 0, 0.38);
 
@@ -279,14 +270,15 @@ function PTZCameraAssembly({
     };
   }, []);
 
-  useFrame((state) => {
+  useFrame(() => {
     if (isReducedMotion) {
       if (mainGroupRef.current) mainGroupRef.current.visible = false;
       return;
     }
 
-    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+    const elapsed = accumTimeRef.current;
 
+    // Si la intro terminó (> 6.0s), ocultar la cámara PTZ definitivamente en esta sesión
     if (elapsed > 6.0) {
       if (mainGroupRef.current) mainGroupRef.current.visible = false;
       return;
@@ -348,7 +340,7 @@ function PTZCameraAssembly({
       ledLightRef.current.intensity = pLed * flash * fadeOut;
     }
 
-    // FASE 2: Simulación de vigilancia PTZ orientada hacia abajo (2.5s -> 5.0s)
+    // FASE 2: Simulación de vigilancia PTZ (2.5s -> 5.0s)
     let panAngle = 0;
     let tiltAngle = 0.55;
 
@@ -390,14 +382,12 @@ function PTZCameraAssembly({
 
   return (
     <group ref={mainGroupRef} position={[0, 0.2, 0]}>
-      {/* Montura superior */}
       <group ref={mountGroupRef}>
         <mesh geometry={mountGeo}>
           <meshBasicMaterial ref={mountMatRef} color={PALETTE.emerald} wireframe transparent opacity={0} />
         </mesh>
       </group>
 
-      {/* Cabeza PTZ giratoria */}
       <group ref={ptzHeadRef}>
         <group ref={housingGroupRef}>
           <mesh geometry={housingSolidGeo}>
@@ -411,7 +401,6 @@ function PTZCameraAssembly({
           </mesh>
         </group>
 
-        {/* Lente Frontal Óptico */}
         <group ref={lensGroupRef}>
           <mesh geometry={lensBezelGeo}>
             <meshBasicMaterial ref={lensBezelMatRef} color={PALETTE.emerald} transparent opacity={0} />
@@ -435,7 +424,6 @@ function PTZCameraAssembly({
           <pointLight ref={ledLightRef} color={PALETTE.emerald} intensity={0} distance={4} />
         </group>
 
-        {/* Cono de Visión */}
         <mesh geometry={coneGeo}>
           <meshBasicMaterial
             ref={visionConeMatRef}
@@ -449,7 +437,6 @@ function PTZCameraAssembly({
         </mesh>
       </group>
 
-      {/* Retícula */}
       <group ref={reticleGroupRef}>
         <mesh geometry={reticleRingGeo}>
           <meshBasicMaterial ref={reticleRingMatRef} color={PALETTE.emerald} transparent opacity={0} side={THREE.DoubleSide} />
@@ -523,11 +510,11 @@ const VolumetricSweepShader = {
 
 function RadarSweep({
   sweepRef,
-  startTimeRef,
+  accumTimeRef,
   isReducedMotion,
 }: {
   sweepRef: React.MutableRefObject<number>;
-  startTimeRef: React.MutableRefObject<number>;
+  accumTimeRef: React.MutableRefObject<number>;
   isReducedMotion: boolean;
 }) {
   const shaderRef = useRef<THREE.ShaderMaterial>(null!);
@@ -549,7 +536,7 @@ function RadarSweep({
 
   useFrame((state) => {
     const sweep = sweepRef.current;
-    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+    const elapsed = accumTimeRef.current;
 
     let sweepOpacity = 1.0;
     if (!isReducedMotion) {
@@ -636,12 +623,12 @@ function BoundingBox3D({ size = 1.1, active = false }: { size?: number; active?:
 function NodeItem({
   node,
   sweepRef,
-  startTimeRef,
+  accumTimeRef,
   isReducedMotion,
 }: {
   node: DetectionNode;
   sweepRef: React.MutableRefObject<number>;
-  startTimeRef: React.MutableRefObject<number>;
+  accumTimeRef: React.MutableRefObject<number>;
   isReducedMotion: boolean;
 }) {
   const lastSweepRef = useRef(0);
@@ -686,7 +673,7 @@ function NodeItem({
 
   useFrame((state) => {
     let act = 0;
-    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+    const elapsed = accumTimeRef.current;
 
     if (isReducedMotion) {
       act = 0.7;
@@ -840,23 +827,23 @@ function FloatingDust() {
 
 // --- 7. Camera Orbit, Intro Transition & Parallax Controller ---
 function CameraRig({
-  startTimeRef,
+  accumTimeRef,
   isReducedMotion,
 }: {
-  startTimeRef: React.MutableRefObject<number>;
+  accumTimeRef: React.MutableRefObject<number>;
   isReducedMotion: boolean;
 }) {
   const { camera, pointer } = useThree();
   const angleRef = useRef(0);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (isReducedMotion) {
       camera.position.set(0, 8.5, 13.5);
       camera.lookAt(0, 0.4, 0);
       return;
     }
 
-    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+    const elapsed = accumTimeRef.current;
 
     const mouseParallaxX = pointer.x * 1.8;
     const mouseParallaxY = pointer.y * 0.9;
@@ -903,19 +890,19 @@ function CameraRig({
 
 // --- 8. Controlador Dinámico del Texto del HUD según la Fase ---
 function HUDPhaseController({
-  startTimeRef,
+  accumTimeRef,
   isReducedMotion,
   hudTextRef,
   hudStatusRef,
 }: {
-  startTimeRef: React.MutableRefObject<number>;
+  accumTimeRef: React.MutableRefObject<number>;
   isReducedMotion: boolean;
   hudTextRef: React.RefObject<HTMLSpanElement>;
   hudStatusRef: React.RefObject<HTMLDivElement>;
 }) {
   const lastPhaseRef = useRef(-1);
 
-  useFrame((state) => {
+  useFrame(() => {
     if (isReducedMotion) {
       if (lastPhaseRef.current !== 2) {
         lastPhaseRef.current = 2;
@@ -925,7 +912,7 @@ function HUDPhaseController({
       return;
     }
 
-    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+    const elapsed = accumTimeRef.current;
     let phase = 0;
     if (elapsed >= 5.0) {
       phase = 2;
@@ -955,12 +942,10 @@ function HUDPhaseController({
 
 // --- 9. Main Scene Content Wrapper ---
 function RadarSceneContent({
-  startTimeRef,
   isReducedMotion,
   hudTextRef,
   hudStatusRef,
 }: {
-  startTimeRef: React.MutableRefObject<number>;
   isReducedMotion: boolean;
   hudTextRef: React.RefObject<HTMLSpanElement>;
   hudStatusRef: React.RefObject<HTMLDivElement>;
@@ -968,13 +953,21 @@ function RadarSceneContent({
   const sweepRef = useRef(0);
   const { size } = useThree();
 
-  useFrame((state, delta) => {
+  // Acumulador de tiempo de intro independiente que persiste a través del scroll
+  const accumTimeRef = useRef(0);
+
+  useFrame((_, delta) => {
+    // Acumular tiempo de intro de forma continua sin depender del clock de R3F
+    if (accumTimeRef.current < 6.5) {
+      accumTimeRef.current += delta;
+    }
+
     if (isReducedMotion) {
       sweepRef.current = 1.2;
       return;
     }
 
-    const elapsed = state.clock.getElapsedTime() - startTimeRef.current;
+    const elapsed = accumTimeRef.current;
 
     if (elapsed >= 4.8) {
       let next = sweepRef.current + delta * 0.85;
@@ -987,9 +980,9 @@ function RadarSceneContent({
 
   return (
     <>
-      <CameraRig startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
+      <CameraRig accumTimeRef={accumTimeRef} isReducedMotion={isReducedMotion} />
       <HUDPhaseController
-        startTimeRef={startTimeRef}
+        accumTimeRef={accumTimeRef}
         isReducedMotion={isReducedMotion}
         hudTextRef={hudTextRef}
         hudStatusRef={hudStatusRef}
@@ -999,23 +992,22 @@ function RadarSceneContent({
       <directionalLight position={[5, 10, 5]} intensity={0.8} color={PALETTE.emerald} />
       <pointLight position={[0, 4, 0]} intensity={1.5} color={PALETTE.cyan} distance={15} />
 
-      <PTZCameraAssembly startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
-      <TerrainGrid startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
-      <RadarSweep sweepRef={sweepRef} startTimeRef={startTimeRef} isReducedMotion={isReducedMotion} />
+      <PTZCameraAssembly accumTimeRef={accumTimeRef} isReducedMotion={isReducedMotion} />
+      <TerrainGrid accumTimeRef={accumTimeRef} isReducedMotion={isReducedMotion} />
+      <RadarSweep sweepRef={sweepRef} accumTimeRef={accumTimeRef} isReducedMotion={isReducedMotion} />
 
       {NODES.map((node) => (
         <NodeItem
           key={node.id}
           node={node}
           sweepRef={sweepRef}
-          startTimeRef={startTimeRef}
+          accumTimeRef={accumTimeRef}
           isReducedMotion={isReducedMotion}
         />
       ))}
 
       <FloatingDust />
 
-      {/* Synchronize EffectComposer render targets to current viewport size */}
       <EffectComposer
         key={`${Math.round(size.width)}-${Math.round(size.height)}`}
         enableNormalPass={false}
@@ -1042,8 +1034,6 @@ export default function XolsecHeroScene() {
   const [isInView, setIsInView] = useState(true);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
 
-  const startTimeRef = useRef<number>(0);
-  const hasStartedIntroRef = useRef(false);
   const hudTextRef = useRef<HTMLSpanElement>(null!);
   const hudStatusRef = useRef<HTMLDivElement>(null!);
 
@@ -1073,13 +1063,6 @@ export default function XolsecHeroScene() {
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
-
-  const handleCanvasCreated = (state: { clock: THREE.Clock }) => {
-    if (!hasStartedIntroRef.current) {
-      startTimeRef.current = state.clock.getElapsedTime();
-      hasStartedIntroRef.current = true;
-    }
-  };
 
   return (
     <div
@@ -1126,7 +1109,6 @@ export default function XolsecHeroScene() {
           alpha: true,
           powerPreference: 'high-performance',
         }}
-        onCreated={handleCanvasCreated}
         style={{
           position: 'absolute',
           top: 0,
@@ -1137,7 +1119,6 @@ export default function XolsecHeroScene() {
         }}
       >
         <RadarSceneContent
-          startTimeRef={startTimeRef}
           isReducedMotion={isReducedMotion}
           hudTextRef={hudTextRef}
           hudStatusRef={hudStatusRef}
