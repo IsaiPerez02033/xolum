@@ -14,6 +14,53 @@ const PALETTE = {
   bg: '#06090e',
 };
 
+// --- 0. Robust Auto-Resize Handler for Dynamic WebGL Viewport ---
+function CanvasResizeHandler() {
+  const { gl, camera } = useThree();
+
+  useEffect(() => {
+    const updateSize = () => {
+      const parent = gl.domElement.parentElement;
+      if (parent) {
+        const width = parent.clientWidth;
+        const height = parent.clientHeight;
+        if (width > 0 && height > 0) {
+          gl.setSize(width, height, false);
+          if (camera instanceof THREE.PerspectiveCamera) {
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+          }
+        }
+      }
+    };
+
+    updateSize();
+    const t1 = setTimeout(updateSize, 30);
+    const t2 = setTimeout(updateSize, 120);
+    const t3 = setTimeout(updateSize, 350);
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateSize();
+    });
+
+    if (gl.domElement.parentElement) {
+      resizeObserver.observe(gl.domElement.parentElement);
+    }
+
+    window.addEventListener('resize', updateSize);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateSize);
+    };
+  }, [gl, camera]);
+
+  return null;
+}
+
 // --- 1. Procedural AI Polyhedral Central Core ---
 function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
   const outerRef = useRef<THREE.Mesh>(null!);
@@ -27,24 +74,21 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
     return { outerGeo: outer, innerPolyGeo: inner, sphereGeo: sphere };
   }, []);
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     if (isReducedMotion) return;
 
     const t = state.clock.getElapsedTime();
 
-    // Rotate outer wireframe on multi axes (direct mutation, zero setState)
     if (outerRef.current) {
       outerRef.current.rotation.y = t * 0.25;
       outerRef.current.rotation.x = Math.sin(t * 0.15) * 0.3;
     }
 
-    // Counter-rotate inner octahedron
     if (innerPolyRef.current) {
       innerPolyRef.current.rotation.y = -t * 0.4;
       innerPolyRef.current.rotation.z = Math.cos(t * 0.2) * 0.4;
     }
 
-    // Subtle breathing scale pulse on core sphere
     if (coreSphereRef.current) {
       const scale = 1.0 + Math.sin(t * 2.2) * 0.06;
       coreSphereRef.current.scale.set(scale, scale, scale);
@@ -53,7 +97,6 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
 
   return (
     <group position={[0, 0.2, 0]}>
-      {/* Outer Cyan Wireframe Icosahedron */}
       <mesh ref={outerRef} geometry={outerGeo}>
         <meshBasicMaterial
           color={PALETTE.cyan}
@@ -64,7 +107,6 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
         />
       </mesh>
 
-      {/* Inner Emerald Wireframe Octahedron */}
       <mesh ref={innerPolyRef} geometry={innerPolyGeo}>
         <meshBasicMaterial
           color={PALETTE.emerald}
@@ -75,7 +117,6 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
         />
       </mesh>
 
-      {/* Glowing Inner Core Sphere */}
       <mesh ref={coreSphereRef} geometry={sphereGeo}>
         <meshBasicMaterial
           color={PALETTE.cyan}
@@ -84,7 +125,6 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
         />
       </mesh>
 
-      {/* Ambient core light */}
       <pointLight color={PALETTE.cyan} intensity={2.2} distance={8} />
     </group>
   );
@@ -94,12 +134,10 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
 function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
   const packetPointsRef = useRef<THREE.Points>(null!);
 
-  // Generate constellation nodes and connection edges
   const { nodePositions, lineVertices, edges } = useMemo(() => {
     const count = 22;
     const nodes: THREE.Vector3[] = [];
 
-    // Deterministic random positions around center
     for (let i = 0; i < count; i++) {
       const radius = 2.8 + (i % 5) * 0.75;
       const theta = (i / count) * Math.PI * 2 + (i % 3) * 0.4;
@@ -111,7 +149,6 @@ function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
       nodes.push(new THREE.Vector3(x, y, z));
     }
 
-    // Build connections between nearby nodes (< 4.2 units distance)
     const edgeList: { from: THREE.Vector3; to: THREE.Vector3; speed: number; progress: number }[] = [];
     const lineVerts: number[] = [];
 
@@ -136,14 +173,12 @@ function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
     return { nodePositions: nodes, lineVertices: new Float32Array(lineVerts), edges: edgeList };
   }, []);
 
-  // Geometry for connection lines
   const linesGeo = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(lineVertices, 3));
     return geo;
   }, [lineVertices]);
 
-  // Buffer Geometry for traveling light packets
   const [packetPositions, packetColors] = useMemo(() => {
     const pos = new Float32Array(edges.length * 3);
     const col = new Float32Array(edges.length * 3);
@@ -173,7 +208,6 @@ function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
     return geo;
   }, [packetPositions, packetColors]);
 
-  // Animate traveling data packets in useFrame (DIRECT REF MUTATION, ZERO setState)
   useFrame((_, delta) => {
     if (isReducedMotion || !packetPointsRef.current) return;
 
@@ -183,7 +217,6 @@ function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
       edge.progress += delta * edge.speed;
       if (edge.progress > 1.0) edge.progress -= 1.0;
 
-      // Lerp position along edge
       const px = THREE.MathUtils.lerp(edge.from.x, edge.to.x, edge.progress);
       const py = THREE.MathUtils.lerp(edge.from.y, edge.to.y, edge.progress);
       const pz = THREE.MathUtils.lerp(edge.from.z, edge.to.z, edge.progress);
@@ -196,7 +229,6 @@ function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
 
   return (
     <group>
-      {/* Network Nodes (Spheres) */}
       {nodePositions.map((pos, idx) => (
         <mesh key={idx} position={pos}>
           <sphereGeometry args={[idx % 4 === 0 ? 0.12 : 0.08, 12, 12]} />
@@ -208,7 +240,6 @@ function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
         </mesh>
       ))}
 
-      {/* Network Connection Lines */}
       <lineSegments geometry={linesGeo}>
         <lineBasicMaterial
           color={PALETTE.cyan}
@@ -218,7 +249,6 @@ function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
         />
       </lineSegments>
 
-      {/* Traveling Data Packets */}
       <points ref={packetPointsRef} geometry={packetGeo}>
         <pointsMaterial
           size={0.16}
@@ -240,7 +270,6 @@ function WireframeGround() {
     geo.rotateX(-Math.PI / 2);
     geo.translate(0, -3.2, 0);
 
-    // Give subtle wave curvature at edges
     const pos = geo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
@@ -344,10 +373,8 @@ function CameraRig({ isReducedMotion }: { isReducedMotion: boolean }) {
       return;
     }
 
-    // Slow continuous orbit
     angleRef.current += delta * 0.08;
 
-    // Mouse pointer parallax
     const mouseX = pointer.x * 1.6;
     const mouseY = pointer.y * 0.8;
 
@@ -367,26 +394,18 @@ function CameraRig({ isReducedMotion }: { isReducedMotion: boolean }) {
 function ConstellationScene({ isReducedMotion }: { isReducedMotion: boolean }) {
   return (
     <>
+      <CanvasResizeHandler />
       <CameraRig isReducedMotion={isReducedMotion} />
 
-      {/* Brand Lights */}
       <ambientLight intensity={0.35} color={PALETTE.bg} />
       <directionalLight position={[6, 8, 6]} intensity={0.9} color={PALETTE.cyan} />
       <pointLight position={[0, -1, 0]} intensity={1.4} color={PALETTE.emerald} distance={12} />
 
-      {/* AI Central Polyhedral Core */}
       <AICore isReducedMotion={isReducedMotion} />
-
-      {/* Network Data Constellation & Light Packets */}
       <DataConstellation isReducedMotion={isReducedMotion} />
-
-      {/* Subtle Wireframe Ground Grid */}
       <WireframeGround />
-
-      {/* Floating Ambient Particles */}
       <FloatingDust />
 
-      {/* Post-Processing Effects */}
       <EffectComposer enableNormalPass={false}>
         <Bloom
           intensity={1.2}
@@ -410,7 +429,6 @@ export default function XolumHeroScene() {
   const [isInView, setIsInView] = useState(true);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
 
-  // IntersectionObserver to pause when offscreen
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -426,7 +444,6 @@ export default function XolumHeroScene() {
     return () => observer.disconnect();
   }, []);
 
-  // Check prefers-reduced-motion
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setIsReducedMotion(mediaQuery.matches);
@@ -444,7 +461,6 @@ export default function XolumHeroScene() {
       ref={containerRef}
       className="relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#22d3ee]/20 bg-[#06090e]/40 backdrop-blur-sm shadow-[0_0_50px_-15px_rgba(34,211,238,0.25)] select-none"
     >
-      {/* Custom Scanline Overlay */}
       <div
         className="pointer-events-none absolute inset-0 z-20 opacity-30"
         style={{
@@ -454,7 +470,6 @@ export default function XolumHeroScene() {
         aria-hidden
       />
 
-      {/* Monospace HUD Frame Top Header */}
       <div className="pointer-events-none absolute top-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[10px] text-[#22d3ee]/80 border-b border-[#22d3ee]/20 pb-1.5">
         <div className="flex items-center gap-2 text-[#22d3ee]">
           <span className="w-2 h-2 rounded-full bg-[#22d3ee] animate-pulse" />
@@ -463,23 +478,30 @@ export default function XolumHeroScene() {
         <div className="tracking-widest text-[#10b981] font-semibold">STATUS: OPER</div>
       </div>
 
-      {/* Monospace HUD Frame Bottom Metrics */}
       <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[9px] text-[#22d3ee]/70">
         <div>NODES: 22 // LATENCY: 12ms</div>
         <div className="text-[#10b981]">AI_ENGINE: ACTIVE</div>
       </div>
 
-      {/* Three.js R3F Canvas Container */}
       <Canvas
+        className="absolute inset-0 !w-full !h-full"
         camera={{ position: [0, 4.5, 12.0], fov: 45 }}
         dpr={[1, 2]}
         frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
+        resize={{ scroll: false, debounce: 0 }}
         gl={{
           antialias: true,
           alpha: true,
           powerPreference: 'high-performance',
         }}
-        style={{ background: 'transparent' }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'transparent',
+        }}
       >
         <ConstellationScene isReducedMotion={isReducedMotion} />
       </Canvas>
