@@ -7,7 +7,7 @@ type Proyecto = (typeof proyectos)[number];
 
 function LogoTile({ p }: { p: Proyecto }) {
   return (
-    <figure className="group relative h-56 w-[300px] shrink-0 overflow-hidden rounded-2xl border border-[var(--hair)] bg-ink-800/60 transition-colors duration-500 hover:border-brand-400/40">
+    <figure className="stage-dark group relative h-56 w-[300px] shrink-0 overflow-hidden rounded-2xl border border-[var(--hair)] bg-ink-800/60 transition-colors duration-500 hover:border-brand-400/40">
       {/* Placa del logo */}
       <div
         className={[

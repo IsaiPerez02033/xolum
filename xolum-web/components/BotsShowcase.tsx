@@ -143,10 +143,10 @@ export function BotsShowcase() {
                 <button
                   key={b.id}
                   onClick={() => setActive(i)}
-                  className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
+                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
                     i === active
-                      ? 'border-brand-400/60 bg-brand-500/10 text-white'
-                      : 'border-[var(--hair)] text-[var(--text-muted)] hover:border-[var(--hair-strong)] hover:text-[var(--text)]'
+                      ? 'border-brand-400/60 bg-brand-500/15 text-brand-700 dark:text-white'
+                      : 'border-[var(--hair-strong)] text-[var(--text-soft)] hover:border-brand-400/40 hover:text-[var(--text)]'
                   }`}
                 >
                   {b.nombre}
@@ -182,7 +182,7 @@ export function BotsShowcase() {
           <div className="relative mx-auto w-full max-w-[360px]">
             <div className="pointer-events-none absolute -inset-6 rounded-[3rem] bg-gradient-to-b from-brand-500/20 to-emerald-500/10 blur-2xl" aria-hidden />
             <div className="glass relative overflow-hidden rounded-[2.4rem] border border-[var(--hair-strong)] p-2 shadow-2xl">
-              <div className="relative h-[520px] overflow-hidden rounded-[2rem] bg-[#070b10]">
+              <div className="stage-dark relative h-[520px] overflow-hidden rounded-[2rem] bg-[#070b10]">
                 <ChatWindow chat={bot.chat} botName={bot.nombre} />
               </div>
             </div>

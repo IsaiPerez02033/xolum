@@ -11,7 +11,7 @@ import { waLink } from '@/lib/data';
 const XolumHeroScene = dynamic(() => import('./XolumHeroScene'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full aspect-square rounded-2xl border border-[#22d3ee]/20 bg-[#06090e]/60 flex items-center justify-center font-mono text-xs text-[#22d3ee]/70">
+    <div className="stage-dark w-full h-full aspect-square rounded-2xl border border-[#22d3ee]/25 bg-[#070b12] flex items-center justify-center font-mono text-xs text-[#22d3ee]/70">
       CARGANDO XOLUM CORE 3D...
     </div>
   ),

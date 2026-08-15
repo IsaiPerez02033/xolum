@@ -559,7 +559,7 @@ export default function XolumHeroScene() {
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#22d3ee]/20 bg-[#06090e]/40 backdrop-blur-sm shadow-[0_0_50px_-15px_rgba(34,211,238,0.25)] select-none transition-shadow duration-300 hover:shadow-[0_0_60px_-10px_rgba(34,211,238,0.35)]"
+      className="stage-dark relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#22d3ee]/25 bg-[#070b12] shadow-[0_0_50px_-15px_rgba(34,211,238,0.3)] select-none transition-shadow duration-300 hover:shadow-[0_0_60px_-10px_rgba(34,211,238,0.4)]"
       style={{ perspective: '1000px' }}
     >
       <div
