@@ -3,7 +3,7 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
-import { EffectComposer, Bloom, DepthOfField } from '@react-three/postprocessing';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 
 // Color Palette Locked to XOLUM Brand
@@ -114,7 +114,9 @@ function TerrainGrid({
   const { geometry, ringsGeometry } = useMemo(() => {
     const width = 70;
     const height = 70;
-    const segments = 90;
+    // 54 segmentos bastan para la malla del radar; 90 tesela de más (se dibuja
+    // como base sólida + wireframe) sin ganancia visual perceptible.
+    const segments = 54;
 
     const planeGeo = new THREE.PlaneGeometry(width, height, segments, segments);
     planeGeo.rotateX(-Math.PI / 2);
@@ -859,7 +861,7 @@ function NodeItem({
           <div
             ref={labelInnerRef}
             style={{ transition: 'opacity 0.25s ease, transform 0.25s ease' }}
-            className="flex flex-col items-start font-mono text-[10px] tracking-wider leading-tight text-[#10b981] bg-[#06090e]/90 border border-[#10b981]/50 px-2 py-1 rounded shadow-[0_0_12px_rgba(16,185,129,0.35)] backdrop-blur-md whitespace-nowrap select-none"
+            className="flex flex-col items-start font-mono text-[10px] tracking-wider leading-tight text-[#10b981] bg-[#06090e]/95 border border-[#10b981]/50 px-2 py-1 rounded shadow-[0_0_12px_rgba(16,185,129,0.35)] whitespace-nowrap select-none"
           >
             <div className="flex items-center gap-1.5 border-b border-[#10b981]/30 pb-0.5 mb-0.5 w-full">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#10b981] animate-ping" />
@@ -878,7 +880,7 @@ function NodeItem({
 
 // --- 6. Floating Dust Particles Component ---
 function FloatingDust() {
-  const count = 350;
+  const count = 150;
   const meshRef = useRef<THREE.Points>(null!);
 
   const [positions, colors] = useMemo(() => {
@@ -903,16 +905,19 @@ function FloatingDust() {
     return [posArray, colorArray];
   }, []);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (!meshRef.current) return;
     const pos = meshRef.current.geometry.attributes.position as THREE.BufferAttribute;
+    const arr = pos.array as Float32Array;
 
-    for (let i = 0; i < count; i++) {
-      let y = pos.getY(i) + delta * 0.18;
-      let x = pos.getX(i) + Math.sin(state.clock.getElapsedTime() * 0.5 + i) * 0.003;
+    // Solo ascenso vertical con wrap. Se opera directo sobre el Float32Array
+    // (sin getY/setY por partícula) y se removió el desvío-X en seno: casi no se
+    // veía y era una llamada transcendental por partícula por frame.
+    const rise = delta * 0.18;
+    for (let i = 1; i < arr.length; i += 3) {
+      let y = arr[i] + rise;
       if (y > 6.5) y = 0.2;
-      pos.setY(i, y);
-      pos.setX(i, x);
+      arr[i] = y;
     }
     pos.needsUpdate = true;
   });
@@ -955,6 +960,8 @@ function CameraRig({
 }) {
   const { camera, pointer } = useThree();
   const angleRef = useRef(0);
+  // Vector reutilizado para no generar basura por frame.
+  const targetVec = useRef(new THREE.Vector3()).current;
 
   useFrame((_, delta) => {
     if (isReducedMotion) {
@@ -1001,7 +1008,7 @@ function CameraRig({
       lookAtY = 0.4;
     }
 
-    camera.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.06);
+    camera.position.lerp(targetVec.set(targetX, targetY, targetZ), 0.06);
     camera.lookAt(0, lookAtY, 0);
   });
 
@@ -1131,16 +1138,15 @@ function RadarSceneContent({
         key={`${Math.round(size.width)}-${Math.round(size.height)}`}
         enableNormalPass={false}
       >
+        {/* Solo Bloom (mipmapBlur, la vía eficiente): mantiene el glow neón de la
+            marca. Se removió DepthOfField porque su blur bokeh a pantalla completa
+            era el mayor costo de GPU por frame y en un recuadro tan chico casi no
+            se percibe — el mayor ahorro para GPUs integradas / equipos viejos. */}
         <Bloom
           intensity={1.1}
           luminanceThreshold={0.25}
           luminanceSmoothing={0.85}
           mipmapBlur
-        />
-        <DepthOfField
-          focusDistance={0.025}
-          focalLength={0.06}
-          bokehScale={1.8}
         />
       </EffectComposer>
     </>
