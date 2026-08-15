@@ -99,7 +99,7 @@ function CanvasResizeHandler() {
   return null;
 }
 
-// --- 1. Procedural 3D Terrain Grid Component (Malla 70x70) ---
+// --- 1. Procedural 3D Terrain Grid Component (100% oculto en Fase 1 y 2) ---
 function TerrainGrid({
   accumTimeRef,
   isReducedMotion,
@@ -153,21 +153,24 @@ function TerrainGrid({
 
   useFrame(() => {
     if (isReducedMotion) {
-      if (baseMatRef.current) baseMatRef.current.opacity = 0.7;
-      if (gridMatRef.current) gridMatRef.current.opacity = 0.22;
-      if (ringsMatRef.current) ringsMatRef.current.opacity = 0.35;
+      if (baseMatRef.current) baseMatRef.current.opacity = 0.75;
+      if (gridMatRef.current) gridMatRef.current.opacity = 0.25;
+      if (ringsMatRef.current) ringsMatRef.current.opacity = 0.38;
       return;
     }
 
     const elapsed = accumTimeRef.current;
 
-    const intro = Math.min(1.0, elapsed / 0.8);
-    const boost = elapsed >= 4.8 ? Math.min(1.0, (elapsed - 4.8) / 1.0) : 0;
-    const mix = (dim: number, full: number) => dim * intro + (full - dim) * boost;
+    // FASE 1 y FASE 2 (0.0s -> 4.8s): Terreno 100% OCULTO (opacidad = 0)
+    // FASE 3 (4.8s -> 5.8s): Fade in suave del terreno cuando la cámara desaparece
+    let fade = 0;
+    if (elapsed >= 4.8) {
+      fade = Math.min(1.0, (elapsed - 4.8) / 1.0);
+    }
 
-    if (baseMatRef.current) baseMatRef.current.opacity = mix(0.55, 0.75);
-    if (gridMatRef.current) gridMatRef.current.opacity = mix(0.19, 0.27);
-    if (ringsMatRef.current) ringsMatRef.current.opacity = mix(0.26, 0.4);
+    if (baseMatRef.current) baseMatRef.current.opacity = 0.75 * fade;
+    if (gridMatRef.current) gridMatRef.current.opacity = 0.25 * fade;
+    if (ringsMatRef.current) ringsMatRef.current.opacity = 0.38 * fade;
   });
 
   return (
@@ -194,7 +197,7 @@ function TerrainGrid({
   );
 }
 
-// --- 2. PTZ Security Camera Component (Lente frontal nítido y limpio sin telarañas de alambre) ---
+// --- 2. PTZ Security Camera Component (Formación limpia sin fondo) ---
 function PTZCameraAssembly({
   accumTimeRef,
   isReducedMotion,
@@ -228,7 +231,6 @@ function PTZCameraAssembly({
   const reticleMatRef = useRef<THREE.LineBasicMaterial>(null!);
   const reticleRingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
 
-  // Geometrías nítidas para Cámara PTZ Profesional
   const {
     mountGeo,
     podSolidGeo,
@@ -256,7 +258,7 @@ function PTZCameraAssembly({
 
     const mountCombined = combineGeometries([cap, stem, ring]);
 
-    // 2) Cuerpo Principal Cápsula PTZ (Sólido oscuro + Aristas nítidas con EdgesGeometry)
+    // 2) Cuerpo Cápsula PTZ Sólido + Aristas nítidas
     const podCylinder = new THREE.CylinderGeometry(0.55, 0.55, 0.65, 32);
     podCylinder.rotateX(Math.PI / 2);
 
@@ -267,26 +269,22 @@ function PTZCameraAssembly({
     const podSolid = combineGeometries([podCylinder, podDomeBack]);
     const podEdges = new THREE.EdgesGeometry(podSolid, 25);
 
-    // 3) UNIDAD LENTE ÓPTICA FRONTAL COMPLETAMENTE DESPEJADA (Z = +0.35 -> +0.45)
-    // Bisel esmeralda exterior
+    // 3) UNIDAD LENTE ÓPTICA FRONTAL COMPLETAMENTE DESPEJADA (Z = +0.35 -> +0.44)
     const bezel = new THREE.TorusGeometry(0.30, 0.04, 20, 40);
     bezel.translate(0, 0, 0.36);
 
-    // Cono de apertura interior cian
     const aperture = new THREE.CylinderGeometry(0.26, 0.16, 0.12, 32, 1, true);
     aperture.rotateX(Math.PI / 2);
     aperture.translate(0, 0, 0.40);
 
-    // Cristal óptico esférico cian
     const glass = new THREE.SphereGeometry(0.18, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.45);
     glass.rotateX(Math.PI / 2);
     glass.translate(0, 0, 0.37);
 
-    // Punto iris láser esmeralda
     const irisDot = new THREE.SphereGeometry(0.065, 16, 16);
     irisDot.translate(0, 0, 0.44);
 
-    // 6 Leds Infrarrojos en anillo
+    // 6 Leds Infrarrojos
     const irVerts: number[] = [];
     const irCount = 6;
     const irRadius = 0.24;
@@ -373,7 +371,7 @@ function PTZCameraAssembly({
 
     const fadeOut = elapsed > 5.0 ? Math.max(0, 1.0 - (elapsed - 5.0) / 1.0) : 1.0;
 
-    // FASE 1: Ensamblaje de la cámara en el centro (0.0s -> 2.2s)
+    // FASE 1: Ensamblaje de la cámara (0.0s -> 2.2s)
     const pMount = Math.min(1.0, elapsed / 0.8);
     const easeMount = 1.0 - Math.pow(1.0 - pMount, 3);
     if (mountGroupRef.current) {
@@ -392,7 +390,7 @@ function PTZCameraAssembly({
       podEdgesMatRef.current.opacity = easePod * 0.75 * fadeOut;
     }
     if (podSolidMatRef.current) {
-      podSolidMatRef.current.opacity = easePod * 0.92 * fadeOut;
+      podSolidMatRef.current.opacity = easePod * 0.95 * fadeOut;
     }
 
     const pLens = Math.max(0, Math.min(1.0, (elapsed - 1.2) / 0.8));
@@ -425,9 +423,9 @@ function PTZCameraAssembly({
       ledLightRef.current.intensity = pLed * flash * fadeOut;
     }
 
-    // FASE 2: Inclinación y Barrido PTZ (2.2s -> 2.5s -> 5.0s)
+    // FASE 2: Simulación de vigilancia PTZ (2.2s -> 2.5s -> 5.0s)
     let panAngle = 0;
-    let tiltAngle = 0.18; // Leve inclinación estética para apreciar el frente 3D durante el ensamblaje
+    let tiltAngle = 0.18;
 
     if (elapsed >= 2.2 && elapsed < 2.5) {
       const tTilt = (elapsed - 2.2) / 0.3;
@@ -484,7 +482,7 @@ function PTZCameraAssembly({
           <mesh geometry={podSolidGeo}>
             <meshBasicMaterial ref={podSolidMatRef} color={PALETTE.bg} transparent opacity={0} side={THREE.DoubleSide} />
           </mesh>
-          {/* Aristas estructurales nítidas (sin rejilla de alambre) */}
+          {/* Aristas estructurales nítidas */}
           <lineSegments geometry={podEdgesGeo}>
             <lineBasicMaterial ref={podEdgesMatRef} color={PALETTE.emerald} transparent opacity={0} linewidth={1.5} />
           </lineSegments>
@@ -1158,7 +1156,7 @@ export default function XolsecHeroScene() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#10b981]/20 bg-[#06090e]/40 backdrop-blur-sm shadow-[0_0_50px_-15px_rgba(16,185,129,0.25)] select-none"
+      className="relative w-full h-full aspect-square overflow-hidden rounded-2xl border border-[#10b981]/20 bg-[#06090e] select-none"
     >
       {/* Scanline Overlay */}
       <div
