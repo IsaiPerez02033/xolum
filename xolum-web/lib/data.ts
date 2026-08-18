@@ -2,7 +2,7 @@
 
 export const CONTACT = {
   whatsapp: '525645915734', // 52 (México) + número de 10 dígitos
-  email: 'aramperez57@gmail.com',
+  email: 'contacto@xolum.mx',
   ciudad: 'Ciudad de México',
 };
 
