@@ -28,31 +28,65 @@ export function ContactForm() {
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  // Si el envío por correo falla, ofrecemos WhatsApp/mailto para no perder el lead.
+  const [fallback, setFallback] = useState(false);
+  // Honeypot anti-spam: campo oculto que un humano nunca llena.
+  const [hp, setHp] = useState('');
 
   const set = (k: keyof typeof EMPTY) => (v: string) => {
     setForm((f) => ({ ...f, [k]: v }));
     if (error) setError(null);
   };
 
-  const onSubmit = (e: React.FormEvent) => {
+  // Mensaje de WhatsApp con los datos del formulario (fallback si el correo falla).
+  const mensajeWa = () =>
+    waLink(
+      [
+        '*Nueva solicitud desde XOLUM*',
+        '',
+        `*Nombre:* ${form.nombre.trim() || '—'}`,
+        `*Negocio:* ${form.negocio.trim() || '—'}`,
+        `*Email:* ${form.email.trim() || '—'}`,
+        `*Qué necesita:* ${form.tipo || '—'}`,
+        '',
+        '*Mensaje:*',
+        form.mensaje.trim() || '—',
+      ].join('\n'),
+    );
+
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setFallback(false);
     if (!form.nombre.trim()) {
       setError('Déjanos al menos tu nombre para saber cómo dirigirnos a ti.');
       return;
     }
-    const lines = [
-      '*Nueva solicitud desde XOLUM*',
-      '',
-      `*Nombre:* ${form.nombre.trim() || '—'}`,
-      `*Negocio:* ${form.negocio.trim() || '—'}`,
-      `*Email:* ${form.email.trim() || '—'}`,
-      `*Qué necesita:* ${form.tipo || '—'}`,
-      '',
-      '*Mensaje:*',
-      form.mensaje.trim() || '—',
-    ];
-    window.open(waLink(lines.join('\n')), '_blank', 'noopener,noreferrer');
-    setSent(true);
+    setEnviando(true);
+    try {
+      const res = await fetch('/api/contacto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, website: hp }),
+      });
+      if (res.ok) {
+        setSent(true);
+        setForm(EMPTY);
+      } else {
+        setError(
+          'No pudimos enviar tu mensaje por correo. Escríbenos por WhatsApp o email:',
+        );
+        setFallback(true);
+      }
+    } catch {
+      setError(
+        'No pudimos enviar tu mensaje por correo. Escríbenos por WhatsApp o email:',
+      );
+      setFallback(true);
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -172,33 +206,71 @@ export function ContactForm() {
               />
             </div>
 
+            {/* Honeypot: oculto para humanos, cebo para bots. */}
+            <input
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              value={hp}
+              onChange={(e) => setHp(e.target.value)}
+              className="absolute left-[-9999px] h-0 w-0 opacity-0"
+            />
+
             {error && (
-              <p className="mt-4 text-sm font-medium text-rose-400" role="alert">
-                {error}
-              </p>
+              <div className="mt-4 text-sm font-medium text-rose-400" role="alert">
+                <p>{error}</p>
+                {fallback && (
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                    <a
+                      href={mensajeWa()}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn-brand justify-center"
+                    >
+                      <WhatsappLogo size={18} weight="fill" />
+                      Enviar por WhatsApp
+                    </a>
+                    <a
+                      href={`mailto:${CONTACT.email}`}
+                      className="btn-ghost justify-center"
+                    >
+                      <EnvelopeSimple size={18} />
+                      Escribir por email
+                    </a>
+                  </div>
+                )}
+              </div>
             )}
 
             {sent && !error && (
               <p className="mt-4 flex items-center gap-2 text-sm font-medium text-emerald-400">
                 <CheckCircle size={18} weight="fill" />
-                Abrimos WhatsApp con tu mensaje. Si no se abrió, escríbenos directo.
+                ¡Listo! Recibimos tu mensaje y te responderemos muy pronto.
               </p>
             )}
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <button type="submit" className="btn-brand flex-1 justify-center">
-                <PaperPlaneTilt size={18} weight="fill" />
-                Enviar por WhatsApp
-              </button>
-              <a href={`mailto:${CONTACT.email}`} className="btn-ghost justify-center">
-                <EnvelopeSimple size={18} />
-                Prefiero email
-              </a>
-            </div>
+            {!sent && (
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="submit"
+                  disabled={enviando}
+                  className="btn-brand flex-1 justify-center disabled:opacity-60"
+                >
+                  <PaperPlaneTilt size={18} weight="fill" />
+                  {enviando ? 'Enviando…' : 'Enviar solicitud'}
+                </button>
+                <a href={`mailto:${CONTACT.email}`} className="btn-ghost justify-center">
+                  <EnvelopeSimple size={18} />
+                  Prefiero email
+                </a>
+              </div>
+            )}
 
             <p className="mt-5 text-xs leading-relaxed text-[var(--text-muted)]">
-              Al enviar abrimos WhatsApp con tu mensaje listo. Tus datos solo se
-              usan para responderte esta solicitud.
+              Te responderemos a tu correo o WhatsApp. Tus datos solo se usan para
+              atender esta solicitud.
             </p>
           </form>
         </Reveal>
