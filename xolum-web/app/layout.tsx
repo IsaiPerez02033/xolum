@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { sans, mono } from '@/lib/fonts';
 import { ThemeProvider } from '@/lib/theme';
+import { JsonLd } from '@/components/JsonLd';
+import { organizationJsonLd } from '@/lib/seo';
 import './globals.css';
 
 // Se ejecuta antes del primer paint para aplicar el tema guardado sin parpadeo.
@@ -21,24 +23,83 @@ export const metadata: Metadata = {
     template: '%s · XOLUM',
   },
   description:
-    'Estudio mexicano de software. Plataformas a la medida, bots de WhatsApp con IA para almacén, facturación CFDI y citas, y XOLSEC, nuestra división de videovigilancia con inteligencia artificial.',
+    'Estudio mexicano de software. Plataformas y aplicaciones a la medida, chatbots de WhatsApp con inteligencia artificial para almacén, facturación CFDI y citas, y XOLSEC, nuestra división de videovigilancia con cámaras e IA.',
+  applicationName: 'XOLUM',
+  authors: [{ name: 'XOLUM', url: 'https://xolum.mx' }],
+  creator: 'XOLUM',
+  publisher: 'XOLUM',
+  category: 'technology',
   keywords: [
+    // Software y desarrollo
     'software a la medida',
-    'automatización WhatsApp',
-    'bot facturación CFDI',
-    'bot almacén',
-    'videovigilancia IA',
+    'desarrollo de software México',
+    'desarrollo de aplicaciones',
+    'aplicaciones web y móviles',
+    'páginas web profesionales',
+    // IA y chatbots
+    'inteligencia artificial para empresas',
+    'chatbots con inteligencia artificial',
+    'chatbot de WhatsApp',
+    'bots de WhatsApp con IA',
+    'automatización con IA',
+    'automatización de WhatsApp',
+    // Bots verticales
+    'bot de facturación CFDI',
+    'facturación CFDI por WhatsApp',
+    'bot de almacén e inventario',
+    'sistema de citas y reservas',
+    // Videovigilancia / XOLSEC
+    'cámaras de seguridad',
+    'cámaras de videovigilancia',
+    'videovigilancia con inteligencia artificial',
+    'CCTV con IA',
+    'circuito cerrado de televisión',
+    'detección de intrusos con IA',
+    // Marca
     'XOLUM',
     'XOLSEC',
     'México',
+    'PyMEs',
   ],
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: 'XOLUM · Software a la medida y automatización con IA',
     description:
-      'Plataformas a la medida y bots de WhatsApp con IA. XOLSEC: videovigilancia con inteligencia artificial.',
+      'Plataformas y aplicaciones a la medida, chatbots de WhatsApp con IA y XOLSEC: videovigilancia con cámaras e inteligencia artificial.',
+    url: 'https://xolum.mx',
+    siteName: 'XOLUM',
     type: 'website',
     locale: 'es_MX',
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'XOLUM · Software a la medida y automatización con IA',
+    description:
+      'Software a la medida, chatbots de WhatsApp con IA y videovigilancia con inteligencia artificial (XOLSEC).',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  // Verificación de Google Search Console por meta-tag (opcional): define
+  // NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION en Vercel. Si verificas por DNS en
+  // Squarespace, puedes dejarlo sin definir.
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? {
+        verification: {
+          google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+        },
+      }
+    : {}),
 };
 
 export default function RootLayout({
@@ -50,6 +111,7 @@ export default function RootLayout({
     <html lang="es" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript + fallbackScript }} />
+        <JsonLd data={organizationJsonLd} />
       </head>
       <body>
         <ThemeProvider>
