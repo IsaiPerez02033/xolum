@@ -93,7 +93,7 @@ export function Proyectos() {
                     Caso Destacado
                   </span>
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-white">{featured.nombre}</h3>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-[var(--text)]">{featured.nombre}</h3>
                 <p className="font-mono text-xs text-emerald-400 mt-1 uppercase tracking-wider">
                   {featured.tipo}
                 </p>
@@ -129,8 +129,8 @@ export function Proyectos() {
                       onClick={() => setSelectedIdx(idx)}
                       className={`flex items-center justify-between rounded-xl px-4 py-3 text-xs font-semibold text-left transition-all ${
                         idx === selectedIdx
-                          ? 'border border-brand-400 bg-brand-500/20 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]'
-                          : 'border border-[var(--hair)] bg-[var(--surface)] text-[var(--text-soft)] hover:border-brand-400/30 hover:text-white'
+                          ? 'border border-brand-400 bg-brand-500/20 text-brand-700 dark:text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]'
+                          : 'border border-[var(--hair)] bg-[var(--surface)] text-[var(--text-soft)] hover:border-brand-400/30 hover:text-[var(--text)]'
                       }`}
                     >
                       <span className="truncate">{p.nombre}</span>

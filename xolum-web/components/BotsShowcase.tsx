@@ -163,8 +163,8 @@ export function BotsShowcase() {
                   onClick={() => setActive(i)}
                   className={`rounded-full border px-4 py-2.5 text-xs font-semibold tracking-wide transition-all ${
                     i === active
-                      ? 'border-brand-400 bg-brand-500/15 text-white shadow-[0_0_20px_rgba(6,182,212,0.3)]'
-                      : 'border-[var(--hair-strong)] text-[var(--text-soft)] hover:border-brand-400/40 hover:text-white'
+                      ? 'border-brand-400 bg-brand-500/15 text-brand-700 dark:text-white shadow-[0_0_20px_rgba(6,182,212,0.3)]'
+                      : 'border-[var(--hair-strong)] text-[var(--text-soft)] hover:border-brand-400/40 hover:text-[var(--text)]'
                   }`}
                 >
                   {b.nombre}
@@ -187,7 +187,7 @@ export function BotsShowcase() {
                     {bot.tagline}
                   </p>
                 </div>
-                <h3 className="text-2xl font-extrabold tracking-tight text-white">{bot.nombre}</h3>
+                <h3 className="text-2xl font-extrabold tracking-tight text-[var(--text)]">{bot.nombre}</h3>
                 <p className="mt-4 max-w-[56ch] leading-relaxed text-[15px] text-[var(--text-soft)]">
                   {bot.descripcion}
                 </p>
