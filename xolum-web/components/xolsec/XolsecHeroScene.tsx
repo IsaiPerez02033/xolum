@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { useAdaptiveQuality } from '@/lib/graphics/quality';
 
 // Color Palette Locked to XOLUM Brand
 const PALETTE = {
@@ -1072,10 +1073,14 @@ function RadarSceneContent({
   isReducedMotion,
   hudTextRef,
   hudStatusRef,
+  config,
+  recordFrameTime,
 }: {
   isReducedMotion: boolean;
   hudTextRef: React.RefObject<HTMLSpanElement>;
   hudStatusRef: React.RefObject<HTMLDivElement>;
+  config: import('@/lib/graphics/types').TierConfig;
+  recordFrameTime: (deltaMs: number) => void;
 }) {
   const sweepRef = useRef(0);
   const { size } = useThree();
@@ -1083,6 +1088,8 @@ function RadarSceneContent({
   const accumTimeRef = useRef(0);
 
   useFrame((_, delta) => {
+    recordFrameTime(delta * 1000);
+
     if (accumTimeRef.current < 6.5) {
       accumTimeRef.current += delta;
     }
@@ -1134,21 +1141,19 @@ function RadarSceneContent({
 
       <FloatingDust />
 
-      <EffectComposer
-        key={`${Math.round(size.width)}-${Math.round(size.height)}`}
-        enableNormalPass={false}
-      >
-        {/* Solo Bloom (mipmapBlur, la vía eficiente): mantiene el glow neón de la
-            marca. Se removió DepthOfField porque su blur bokeh a pantalla completa
-            era el mayor costo de GPU por frame y en un recuadro tan chico casi no
-            se percibe — el mayor ahorro para GPUs integradas / equipos viejos. */}
-        <Bloom
-          intensity={1.1}
-          luminanceThreshold={0.25}
-          luminanceSmoothing={0.85}
-          mipmapBlur
-        />
-      </EffectComposer>
+      {config.enableBloom ? (
+        <EffectComposer
+          key={`${Math.round(size.width)}-${Math.round(size.height)}`}
+          enableNormalPass={false}
+        >
+          <Bloom
+            intensity={1.1}
+            luminanceThreshold={0.25}
+            luminanceSmoothing={0.85}
+            mipmapBlur
+          />
+        </EffectComposer>
+      ) : null}
     </>
   );
 }
@@ -1158,6 +1163,8 @@ export default function XolsecHeroScene() {
   const containerRef = useRef<HTMLDivElement>(null!);
   const [isInView, setIsInView] = useState(true);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
+
+  const { config, recordFrameTime } = useAdaptiveQuality();
 
   const hudTextRef = useRef<HTMLSpanElement>(null!);
   const hudStatusRef = useRef<HTMLDivElement>(null!);
@@ -1212,8 +1219,8 @@ export default function XolsecHeroScene() {
             CALIBRANDO SENSOR // PTZ-CAM-01
           </span>
         </div>
-        <div ref={hudStatusRef} className="tracking-widest">
-          SYS_STATUS: CALIBRATING
+        <div ref={hudStatusRef} className="tracking-widest font-semibold text-[#10b981]">
+          SYS_STATUS: {config.tier}
         </div>
       </div>
 
@@ -1227,8 +1234,8 @@ export default function XolsecHeroScene() {
       <Canvas
         className="absolute inset-0 w-full h-full"
         camera={{ position: [0, 0.2, 7.8], fov: 40 }}
-        dpr={[1, 2]}
-        frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
+        dpr={[config.minDpr, config.maxDpr]}
+        frameloop={isReducedMotion || config.frameloop === 'never' ? 'never' : isInView ? config.frameloop : 'never'}
         gl={{
           antialias: true,
           alpha: true,
@@ -1247,6 +1254,8 @@ export default function XolsecHeroScene() {
           isReducedMotion={isReducedMotion}
           hudTextRef={hudTextRef}
           hudStatusRef={hudStatusRef}
+          config={config}
+          recordFrameTime={recordFrameTime}
         />
       </Canvas>
     </div>

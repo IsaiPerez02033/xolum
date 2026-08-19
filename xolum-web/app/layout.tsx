@@ -3,6 +3,7 @@ import { sans, mono } from '@/lib/fonts';
 import { ThemeProvider } from '@/lib/theme';
 import { JsonLd } from '@/components/JsonLd';
 import { organizationJsonLd } from '@/lib/seo';
+import { DebugOverlay } from '@/lib/graphics/DebugOverlay';
 import './globals.css';
 
 // Se ejecuta antes del primer paint para aplicar el tema guardado sin parpadeo.
@@ -30,32 +31,27 @@ export const metadata: Metadata = {
   publisher: 'XOLUM',
   category: 'technology',
   keywords: [
-    // Software y desarrollo
     'software a la medida',
     'desarrollo de software México',
     'desarrollo de aplicaciones',
     'aplicaciones web y móviles',
     'páginas web profesionales',
-    // IA y chatbots
     'inteligencia artificial para empresas',
     'chatbots con inteligencia artificial',
     'chatbot de WhatsApp',
     'bots de WhatsApp con IA',
     'automatización con IA',
     'automatización de WhatsApp',
-    // Bots verticales
     'bot de facturación CFDI',
     'facturación CFDI por WhatsApp',
     'bot de almacén e inventario',
     'sistema de citas y reservas',
-    // Videovigilancia / XOLSEC
     'cámaras de seguridad',
     'cámaras de videovigilancia',
     'videovigilancia con inteligencia artificial',
     'CCTV con IA',
     'circuito cerrado de televisión',
     'detección de intrusos con IA',
-    // Marca
     'XOLUM',
     'XOLSEC',
     'México',
@@ -90,9 +86,6 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
-  // Verificación de Google Search Console por meta-tag (opcional): define
-  // NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION en Vercel. Si verificas por DNS en
-  // Squarespace, puedes dejarlo sin definir.
   ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
     ? {
         verification: {
@@ -117,6 +110,7 @@ export default function RootLayout({
         <ThemeProvider>
           <div className="noise" aria-hidden />
           {children}
+          <DebugOverlay />
         </ThemeProvider>
       </body>
     </html>

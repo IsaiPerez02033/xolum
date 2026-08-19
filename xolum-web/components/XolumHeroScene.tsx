@@ -4,6 +4,7 @@ import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { EffectComposer, Bloom, DepthOfField } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { useAdaptiveQuality } from '@/lib/graphics/quality';
 
 // Palette LOCKED to XOLUM Brand (Cyan Leads, Emerald Accents)
 const PALETTE = {
@@ -305,19 +306,19 @@ function WireframeGround() {
   );
 }
 
-// --- 4. Floating Dust Particles Component ---
-function FloatingDust() {
-  const count = 300;
+// --- 4. Floating Dust Particles Component Adaptativo ---
+function FloatingDust({ count }: { count: number }) {
   const pointsRef = useRef<THREE.Points>(null!);
 
   const [positions, colors] = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    const col = new Float32Array(count * 3);
+    const safeCount = Math.max(count, 10);
+    const pos = new Float32Array(safeCount * 3);
+    const col = new Float32Array(safeCount * 3);
 
     const cyRgb = PALETTE.cyanRgb;
     const emRgb = PALETTE.emeraldRgb;
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < safeCount; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 30;
       pos[i * 3 + 1] = (Math.random() - 0.5) * 8 + 0.5;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 30;
@@ -330,13 +331,14 @@ function FloatingDust() {
     }
 
     return [pos, col];
-  }, []);
+  }, [count]);
 
   useFrame((state, delta) => {
     if (!pointsRef.current) return;
     const posAttr = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
 
-    for (let i = 0; i < count; i++) {
+    const currentCount = Math.min(count, posAttr.count);
+    for (let i = 0; i < currentCount; i++) {
       let y = posAttr.getY(i) + delta * 0.15;
       let x = posAttr.getX(i) + Math.sin(state.clock.getElapsedTime() * 0.4 + i) * 0.003;
       if (y > 5.0) y = -3.0;
@@ -351,13 +353,13 @@ function FloatingDust() {
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          count={count}
+          count={positions.length / 3}
           array={positions}
           itemSize={3}
         />
         <bufferAttribute
           attach="attributes-color"
-          count={count}
+          count={colors.length / 3}
           array={colors}
           itemSize={3}
         />
@@ -404,8 +406,20 @@ function CameraRig({ isReducedMotion }: { isReducedMotion: boolean }) {
 }
 
 // --- 6. Main 3D Scene Composition ---
-function ConstellationScene({ isReducedMotion }: { isReducedMotion: boolean }) {
+function ConstellationScene({
+  isReducedMotion,
+  config,
+  recordFrameTime,
+}: {
+  isReducedMotion: boolean;
+  config: import('@/lib/graphics/types').TierConfig;
+  recordFrameTime: (deltaMs: number) => void;
+}) {
   const { size } = useThree();
+
+  useFrame((_, delta) => {
+    recordFrameTime(delta * 1000);
+  });
 
   return (
     <>
@@ -419,24 +433,30 @@ function ConstellationScene({ isReducedMotion }: { isReducedMotion: boolean }) {
       <AICore isReducedMotion={isReducedMotion} />
       <DataConstellation isReducedMotion={isReducedMotion} />
       <WireframeGround />
-      <FloatingDust />
+      <FloatingDust count={config.particleCount} />
 
-      <EffectComposer
-        key={`${Math.round(size.width)}-${Math.round(size.height)}`}
-        enableNormalPass={false}
-      >
-        <Bloom
-          intensity={1.2}
-          luminanceThreshold={0.2}
-          luminanceSmoothing={0.85}
-          mipmapBlur
-        />
-        <DepthOfField
-          focusDistance={0.03}
-          focalLength={0.06}
-          bokehScale={1.8}
-        />
-      </EffectComposer>
+      {(config.enableBloom || config.enableDepthOfField) ? (
+        <EffectComposer
+          key={`${Math.round(size.width)}-${Math.round(size.height)}`}
+          enableNormalPass={false}
+        >
+          {config.enableBloom ? (
+            <Bloom
+              intensity={1.2}
+              luminanceThreshold={0.2}
+              luminanceSmoothing={0.85}
+              mipmapBlur
+            />
+          ) : <></>}
+          {config.enableDepthOfField ? (
+            <DepthOfField
+              focusDistance={0.03}
+              focalLength={0.06}
+              bokehScale={1.8}
+            />
+          ) : <></>}
+        </EffectComposer>
+      ) : null}
     </>
   );
 }
@@ -446,6 +466,8 @@ export default function XolumHeroScene() {
   const containerRef = useRef<HTMLDivElement>(null!);
   const [isInView, setIsInView] = useState(true);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
+
+  const { config, recordFrameTime } = useAdaptiveQuality();
 
   // Live OS Telemetry state
   const [latency, setLatency] = useState(12);
@@ -488,12 +510,10 @@ export default function XolumHeroScene() {
   // Live System OS Telemetry updates (subtle, non-repetitive micro changes)
   useEffect(() => {
     const latencyInterval = setInterval(() => {
-      // Jitter latency between 10ms and 14ms
       setLatency(10 + Math.floor(Math.random() * 5));
     }, 2800);
 
     const nodesInterval = setInterval(() => {
-      // Fluctuate node count between 22 and 24
       setNodesCount(22 + (Math.random() > 0.6 ? 1 : 0));
     }, 4200);
 
@@ -543,7 +563,6 @@ export default function XolumHeroScene() {
     const normX = (e.clientX - centerX) / (rect.width / 2);
     const normY = (e.clientY - centerY) / (rect.height / 2);
 
-    // Max 3.2 degrees pitch and roll tilt
     targetRotation.current = {
       x: -normY * 3.2,
       y: normX * 3.2,
@@ -589,7 +608,7 @@ export default function XolumHeroScene() {
           </div>
           <div className="tracking-widest text-[#10b981] font-semibold flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
-            STATUS: OPER
+            STATUS: {config.tier}
           </div>
         </div>
 
@@ -614,8 +633,8 @@ export default function XolumHeroScene() {
           <Canvas
             className="absolute inset-0 w-full h-full"
             camera={{ position: [0, 4.5, 12.0], fov: 40 }}
-            dpr={[1, 1.5]}
-            frameloop={isReducedMotion ? 'demand' : isInView ? 'always' : 'never'}
+            dpr={[config.minDpr, config.maxDpr]}
+            frameloop={isReducedMotion || config.frameloop === 'never' ? 'never' : isInView ? config.frameloop : 'never'}
             gl={{
               antialias: true,
               alpha: true,
@@ -630,7 +649,11 @@ export default function XolumHeroScene() {
               background: 'transparent',
             }}
           >
-            <ConstellationScene isReducedMotion={isReducedMotion} />
+            <ConstellationScene
+              isReducedMotion={isReducedMotion}
+              config={config}
+              recordFrameTime={recordFrameTime}
+            />
           </Canvas>
         </div>
       </div>
