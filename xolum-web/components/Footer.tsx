@@ -1,6 +1,18 @@
 import Image from 'next/image';
-import { CONTACT, waLink } from '@/lib/data';
-import { WhatsappLogo, EnvelopeSimple, MapPin } from '@phosphor-icons/react/dist/ssr';
+import { CONTACT, waLink, SOCIAL } from '@/lib/data';
+import {
+  WhatsappLogo,
+  EnvelopeSimple,
+  MapPin,
+  InstagramLogo,
+  FacebookLogo,
+} from '@phosphor-icons/react/dist/ssr';
+
+// Mapea cada red social (por su label en data.ts) a su ícono de Phosphor.
+const SOCIAL_ICON: Record<string, React.ReactNode> = {
+  Instagram: <InstagramLogo size={19} />,
+  Facebook: <FacebookLogo size={19} />,
+};
 
 export function Footer() {
   return (
@@ -15,6 +27,21 @@ export function Footer() {
             <p className="mt-4 max-w-[38ch] text-sm leading-relaxed text-[var(--text-muted)]">
               Estudio mexicano de software. Plataformas a la medida, automatización con IA y seguridad electrónica con XOLSEC.
             </p>
+
+            <div className="mt-6 flex items-center gap-3">
+              {SOCIAL.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={s.label}
+                  className="grid h-10 w-10 place-items-center rounded-xl border border-[var(--hair)] text-[var(--text-muted)] transition-colors hover:border-[rgba(34,211,238,0.5)] hover:text-[var(--brand-cyan)]"
+                >
+                  {SOCIAL_ICON[s.label]}
+                </a>
+              ))}
+            </div>
           </div>
 
           <div>

@@ -9,6 +9,12 @@ export const CONTACT = {
 export const waLink = (texto: string) =>
   `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(texto)}`;
 
+// Redes sociales de XOLUM. El Footer mapea cada `label` a su ícono.
+export const SOCIAL = [
+  { label: 'Instagram', href: 'https://www.instagram.com/xolumsolutions/' },
+  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61593226901128' },
+] as const;
+
 // Identidad de la marca. El nombre nace de Xólotl, el dios mexica con forma de
 // perro (xoloitzcuintle) que guía y protege a las almas en la oscuridad.
 export const nosotros = {
