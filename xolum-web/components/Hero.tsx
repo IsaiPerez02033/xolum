@@ -157,11 +157,16 @@ export function Hero() {
                 : `translate3d(${lerpMouse.current.x * 12}px, ${lerpMouse.current.y * 12}px, 0)`,
             }}
           >
+            <motion.div {...rise(0.04)} className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-400/30 bg-brand-500/10 px-3.5 py-1 text-xs font-mono tracking-widest text-brand-300 backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-400 animate-pulse" />
+              <span>INGENIERÍA DE SOFTWARE & AUTOMATIZACIÓN CON IA</span>
+            </motion.div>
+
             <motion.h1
               {...rise(0.08)}
-              className="text-4xl font-extrabold leading-[1.03] tracking-tight sm:text-5xl lg:text-[3.9rem]"
+              className="text-4xl font-extrabold leading-[1.04] tracking-tight sm:text-5xl lg:text-[3.9rem]"
             >
-              El software que tu negocio
+              El software que tu empresa
               <br />
               <span className="grad-text">opera todos los días.</span>
             </motion.h1>
@@ -170,16 +175,16 @@ export function Hero() {
               {...rise(0.16)}
               className="mt-6 max-w-[54ch] text-lg leading-relaxed text-[var(--text-soft)]"
             >
-              Plataformas a la medida y bots de WhatsApp con IA para tu operación. Más XOLSEC, nuestra división de seguridad con inteligencia artificial.
+              Desarrollamos plataformas a la medida, automatizaciones por WhatsApp con inteligencia artificial y sistemas de videovigilancia avanzada (XOLSEC) para optimizar y proteger tus operaciones.
             </motion.p>
 
             <motion.div {...rise(0.24)} className="mt-9 flex flex-wrap items-center gap-4">
               <MagneticButton
-                href={waLink('Hola XOLUM, quiero agendar una llamada.')}
+                href={waLink('Hola XOLUM, me interesa agendar una llamada de diagnóstico para mi empresa.')}
                 className="btn-brand group transition-all duration-300 hover:shadow-[0_0_35px_rgba(16,185,129,0.55)]"
                 strength={0.35}
               >
-                Agenda una llamada
+                Agendar diagnóstico sin costo
                 <ArrowRight
                   size={18}
                   weight="bold"
@@ -188,7 +193,7 @@ export function Hero() {
               </MagneticButton>
 
               <MagneticButton href="#servicios" className="btn-ghost group" strength={0.3}>
-                Ver lo que hacemos
+                Explorar soluciones
               </MagneticButton>
             </motion.div>
           </div>

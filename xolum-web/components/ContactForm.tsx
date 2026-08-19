@@ -104,24 +104,32 @@ export function ContactForm() {
       <div className="shell relative grid grid-cols-1 items-start gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
         {/* ── Columna izquierda: mensaje + contacto directo ── */}
         <Reveal>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--text-muted)]">
-            Contacto
+          <p className="text-xs font-mono font-semibold uppercase tracking-[0.25em] text-brand-300">
+            Contacto Directo & Diagnóstico
           </p>
-          <h2 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Cuéntanos
-            <br />
-            <span className="grad-text">qué necesitas.</span>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl leading-tight">
+            Diseñemos la solución que tu empresa <span className="grad-text">necesita.</span>
           </h2>
           <p className="mt-6 max-w-[46ch] text-lg leading-relaxed text-[var(--text-soft)]">
-            Escríbenos cómo operas hoy y qué te gustaría automatizar o proteger.
-            Te respondemos con una propuesta concreta, sin compromiso.
+            Compártenos la dinámica actual de tu negocio. Evaluamos tu arquitectura o proceso operativo y te entregamos una propuesta técnica con alcance y costos claros.
           </p>
+
+          <div className="mt-8 space-y-3">
+            <div className="flex items-center gap-3 text-xs font-mono text-[var(--text-soft)] bg-[var(--surface-2)] px-4 py-2.5 rounded-xl border border-[var(--hair)]">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Respuesta garantizada en menos de 24 horas hábiles</span>
+            </div>
+            <div className="flex items-center gap-3 text-xs font-mono text-[var(--text-soft)] bg-[var(--surface-2)] px-4 py-2.5 rounded-xl border border-[var(--hair)]">
+              <span className="h-2 w-2 rounded-full bg-brand-400" />
+              <span>Sesión inicial de diagnóstico técnico sin compromiso</span>
+            </div>
+          </div>
 
           <a
             href={waLink('Hola XOLUM, quiero una propuesta para mi negocio.')}
             target="_blank"
             rel="noreferrer"
-            className="btn-brand mt-9"
+            className="btn-brand mt-8"
           >
             <WhatsappLogo size={20} weight="fill" />
             Chatear ahora por WhatsApp
@@ -131,19 +139,19 @@ export function ContactForm() {
           <div className="mt-10 space-y-5">
             <ContactRow
               icon={<EnvelopeSimple size={18} weight="bold" />}
-              label="Email"
+              label="Email Corporativo"
               value={CONTACT.email}
               href={`mailto:${CONTACT.email}`}
             />
             <ContactRow
               icon={<WhatsappLogo size={18} weight="fill" />}
-              label="WhatsApp"
+              label="Línea Directa WhatsApp"
               value={`+${CONTACT.whatsapp.slice(0, 2)} ${CONTACT.whatsapp.slice(2)}`}
               href={waLink('Hola XOLUM 👋')}
             />
             <ContactRow
               icon={<MapPin size={18} weight="bold" />}
-              label="Ubicación"
+              label="Ubicación Principales"
               value={CONTACT.ciudad}
             />
           </div>

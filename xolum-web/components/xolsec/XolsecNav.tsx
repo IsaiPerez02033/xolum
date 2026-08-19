@@ -45,8 +45,8 @@ export function XolsecNav() {
               <ArrowLeft size={15} weight="bold" />
               Volver a XOLUM
             </a>
-            <a href={waLink('Hola XOLSEC, quiero cotizar videovigilancia.')} target="_blank" rel="noreferrer" className="btn-brand text-sm">
-              Cotizar instalación
+            <a href={waLink('Hola XOLSEC, quiero cotizar un proyecto de videovigilancia e IA.')} target="_blank" rel="noreferrer" className="btn-brand text-xs font-semibold">
+              Cotizar proyecto
             </a>
           </div>
         </nav>
