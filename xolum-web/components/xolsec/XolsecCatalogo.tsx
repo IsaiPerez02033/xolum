@@ -34,7 +34,7 @@ export function XolsecCatalogo() {
         <div className="mt-12 flex snap-x gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:overflow-visible lg:grid-cols-5">
           {xolsec.camaras.map((c, i) => (
             <Reveal key={c.nombre} delay={(i % 5) * 0.06} className="min-w-[240px] snap-start md:min-w-0">
-              <article className="group glass relative flex flex-col justify-between h-full overflow-hidden rounded-2xl border border-[var(--hair-strong)] p-6 transition-all duration-300 hover:border-emerald-400/50 hover:shadow-[0_10px_30px_-10px_rgba(16,185,129,0.25)]">
+              <article className="group glass relative flex flex-col justify-between h-full overflow-hidden rounded-2xl border border-[var(--hair-strong)] p-6 transition-[color,background-color,border-color,opacity,transform] duration-300 hover:border-emerald-400/50 hover:shadow-[0_10px_30px_-10px_rgba(16,185,129,0.25)]">
                 <div
                   className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
                   style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.35), transparent 70%)' }}

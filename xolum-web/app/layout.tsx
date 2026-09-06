@@ -5,6 +5,7 @@ import { JsonLd } from '@/components/JsonLd';
 import { organizationJsonLd } from '@/lib/seo';
 import { DebugOverlay } from '@/lib/graphics/DebugOverlay';
 import './globals.css';
+import { GraphicsProvider } from '@/lib/graphics/quality';
 
 // Se ejecuta antes del primer paint para aplicar el tema guardado sin parpadeo.
 // Es ES5 puro: corre incluso en navegadores viejos (Windows 7/XP) donde el
@@ -107,11 +108,11 @@ export default function RootLayout({
         <JsonLd data={organizationJsonLd} />
       </head>
       <body>
-        <ThemeProvider>
+        <ThemeProvider><GraphicsProvider>
           <div className="noise" aria-hidden />
           {children}
           <DebugOverlay />
-        </ThemeProvider>
+        </GraphicsProvider></ThemeProvider>
       </body>
     </html>
   );

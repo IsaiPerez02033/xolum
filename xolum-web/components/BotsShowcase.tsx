@@ -161,7 +161,7 @@ export function BotsShowcase() {
                 <button
                   key={b.id}
                   onClick={() => setActive(i)}
-                  className={`rounded-full border px-4 py-2.5 text-xs font-semibold tracking-wide transition-all ${
+                  className={`rounded-full border px-4 py-2.5 text-xs font-semibold tracking-wide transition-[color,background-color,border-color,opacity,transform] ${
                     i === active
                       ? 'border-brand-400 bg-brand-500/15 text-brand-700 dark:text-white shadow-[0_0_20px_rgba(6,182,212,0.3)]'
                       : 'border-[var(--hair-strong)] text-[var(--text-soft)] hover:border-brand-400/40 hover:text-[var(--text)]'

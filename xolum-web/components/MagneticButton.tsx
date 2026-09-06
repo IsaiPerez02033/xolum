@@ -8,7 +8,7 @@ export function MagneticButton({
   href,
   className,
   onClick,
-  strength = 0.4,
+  strength = 0.12,
 }: {
   children: ReactNode;
   href?: string;
@@ -24,7 +24,7 @@ export function MagneticButton({
   const sy = useSpring(y, { stiffness: 200, damping: 15, mass: 0.4 });
 
   function onMove(e: React.MouseEvent) {
-    if (reduce || !ref.current) return;
+    if (reduce || !window.matchMedia('(hover: hover) and (pointer: fine)').matches || !ref.current) return;
     const r = ref.current.getBoundingClientRect();
     x.set((e.clientX - (r.left + r.width / 2)) * strength);
     y.set((e.clientY - (r.top + r.height / 2)) * strength);

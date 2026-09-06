@@ -26,17 +26,17 @@ export function Servicios() {
           </p>
         </Reveal>
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-3">
+        <div className="mt-14 grid gap-0 lg:grid-cols-3">
           {servicios.map((s, i) => (
             <Reveal key={s.titulo} delay={i * 0.1}>
-              <article className="group glass relative flex h-full flex-col rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-400/40 hover:shadow-[0_15px_45px_-15px_rgba(6,182,212,0.25)]">
+              <article className="group relative flex h-full flex-col border-t border-[var(--border-strong)] px-5 py-8 lg:px-8">
                 {/* Header Icon + Number Tag */}
                 <div className="mb-6 flex items-center justify-between">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--hair-strong)] bg-[var(--surface-2)] text-brand-300 transition-colors duration-300 group-hover:border-brand-400/50 group-hover:bg-brand-500/10 group-hover:text-brand-200">
                     <Icon name={s.icon} size={28} weight="duotone" />
                   </div>
                   <span className="font-mono text-xs font-bold tracking-widest text-[var(--text-muted)] group-hover:text-brand-300 transition-colors">
-                    0{i + 1} // TECH
+                    XOLUM
                   </span>
                 </div>
 
@@ -64,7 +64,7 @@ export function Servicios() {
                     href={waLink(`Hola XOLUM, requiero información sobre ${s.titulo}.`)}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-brand-300 transition-all group-hover:translate-x-1 group-hover:text-brand-200"
+                    className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-brand-300 transition-[color,background-color,border-color,opacity,transform] group-hover:translate-x-1 group-hover:text-brand-200"
                   >
                     <span>Consultar solución</span>
                     <ArrowRight size={14} weight="bold" />

@@ -62,7 +62,7 @@ export function Nosotros() {
             { icon: Eye, label: 'Visión de Futuro', texto: nosotros.vision },
           ].map((item, i) => (
             <Reveal key={item.label} delay={i * 0.1}>
-              <article className="group glass flex h-full flex-col rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1 hover:border-brand-400/40">
+              <article className="group glass flex h-full flex-col rounded-3xl p-8 transition-[color,background-color,border-color,opacity,transform] duration-300 hover:-translate-y-1 hover:border-brand-400/40">
                 <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--hair)] bg-[var(--surface-2)] text-brand-300 transition-colors group-hover:border-brand-400/50 group-hover:bg-brand-500/10">
                   <item.icon size={28} weight="duotone" />
                 </div>
@@ -79,7 +79,7 @@ export function Nosotros() {
             const V = valorIcons[v.icon] ?? Sparkle;
             return (
               <Reveal key={v.t} delay={i * 0.08}>
-                <div className="flex h-full items-start gap-4 rounded-2xl border border-[var(--hair)] bg-[var(--surface)] p-6 transition-all duration-300 hover:border-brand-400/30">
+                <div className="flex h-full items-start gap-4 rounded-2xl border border-[var(--hair)] bg-[var(--surface)] p-6 transition-[color,background-color,border-color,opacity,transform] duration-300 hover:border-brand-400/30">
                   <V size={24} weight="duotone" className="mt-0.5 shrink-0 text-emerald-400" />
                   <div>
                     <h4 className="text-base font-bold text-[var(--text)]">{v.t}</h4>

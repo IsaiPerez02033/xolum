@@ -25,7 +25,7 @@ export function Verticales() {
           <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-4">
             {verticales.map((v, i) => (
               <Reveal key={v.nombre} delay={(i % 4) * 0.06}>
-                <div className="group relative flex flex-col justify-between h-full rounded-2xl border border-[var(--hair)] bg-[var(--surface)] p-5 transition-all duration-300 hover:border-brand-400/50 hover:bg-[var(--surface-2)] hover:shadow-[0_10px_30px_-10px_rgba(6,182,212,0.2)]">
+                <div className="group relative flex flex-col justify-between h-full rounded-2xl border border-[var(--hair)] bg-[var(--surface)] p-5 transition-[color,background-color,border-color,opacity,transform] duration-300 hover:border-brand-400/50 hover:bg-[var(--surface-2)] hover:shadow-[0_10px_30px_-10px_rgba(6,182,212,0.2)]">
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--hair)] bg-[var(--bg)] text-brand-300 transition-transform duration-300 group-hover:scale-110 group-hover:text-brand-200">

@@ -38,7 +38,7 @@ export function Proceso() {
               const IconComp = stepIcons[i % stepIcons.length];
               return (
                 <Reveal key={p.n} delay={i * 0.08}>
-                  <div className="group glass relative flex gap-6 rounded-3xl p-6 sm:p-7 transition-all duration-300 hover:border-brand-400/40 hover:-translate-y-1">
+                  <div className="group glass relative flex gap-6 rounded-3xl p-6 sm:p-7 transition-[color,background-color,border-color,opacity,transform] duration-300 hover:border-brand-400/40 hover:-translate-y-1">
                     <div className="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-brand-400/30 bg-[#070c14] font-mono text-sm font-bold text-brand-300 transition-colors group-hover:border-brand-400 group-hover:bg-brand-500/20 group-hover:text-white shadow-lg">
                       <IconComp size={24} weight="duotone" />
                     </div>

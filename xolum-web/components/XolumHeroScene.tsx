@@ -4,6 +4,7 @@ import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { EffectComposer, Bloom, DepthOfField } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { SceneLoop } from '@/lib/graphics/SceneLoop';
 import { useAdaptiveQuality } from '@/lib/graphics/quality';
 
 // Palette LOCKED to XOLUM Brand (Cyan Leads, Emerald Accents)
@@ -16,57 +17,6 @@ const PALETTE = {
 };
 
 // --- 0. Control Activo del Tamaño del Canvas (Fix permanente para 100% de cobertura) ---
-function CanvasResizeHandler() {
-  const { gl, camera, invalidate } = useThree();
-
-  useEffect(() => {
-    let animId: number;
-    const startTime = performance.now();
-
-    const checkSize = () => {
-      const parent = gl.domElement.parentElement;
-      if (parent) {
-        const width = parent.clientWidth;
-        const height = parent.clientHeight;
-
-        if (width > 0 && height > 0) {
-          if (camera instanceof THREE.PerspectiveCamera) {
-            const aspect = width / height;
-            if (Math.abs(camera.aspect - aspect) > 0.001) {
-              camera.aspect = aspect;
-              camera.updateProjectionMatrix();
-              invalidate();
-            }
-          }
-        }
-      }
-
-      if (performance.now() - startTime < 2500) {
-        animId = requestAnimationFrame(checkSize);
-      }
-    };
-
-    checkSize();
-
-    const ro = new ResizeObserver(() => {
-      checkSize();
-    });
-
-    if (gl.domElement.parentElement) {
-      ro.observe(gl.domElement.parentElement);
-    }
-
-    window.addEventListener('resize', checkSize);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      ro.disconnect();
-      window.removeEventListener('resize', checkSize);
-    };
-  }, [gl, camera, invalidate]);
-
-  return null;
-}
 
 // --- 1. Procedural AI Polyhedral Central Core ---
 function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
@@ -85,7 +35,7 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
   useFrame((state) => {
     if (isReducedMotion) return;
 
-    const t = state.clock.getElapsedTime();
+    const t = state.clock.elapsedTime;
 
     if (outerRef.current) {
       outerRef.current.rotation.y = t * 0.25;
@@ -145,11 +95,11 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
 }
 
 // --- 2. Data Constellation Network & Flowing Packets ---
-function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
+function DataConstellation({ isReducedMotion, workflow }: { isReducedMotion: boolean; workflow: number }) {
   const packetPointsRef = useRef<THREE.Points>(null!);
 
   const { nodePositions, lineVertices, edges } = useMemo(() => {
-    const count = 22;
+    const count = 14;
     const nodes: THREE.Vector3[] = [];
 
     for (let i = 0; i < count; i++) {
@@ -169,7 +119,7 @@ function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const dist = nodes[i].distanceTo(nodes[j]);
-        if (dist < 4.2) {
+        if (dist < [4.2, 5.0, 3.5][workflow]) {
           lineVerts.push(
             nodes[i].x, nodes[i].y, nodes[i].z,
             nodes[j].x, nodes[j].y, nodes[j].z
@@ -185,7 +135,7 @@ function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
     }
 
     return { nodePositions: nodes, lineVertices: new Float32Array(lineVerts), edges: edgeList };
-  }, []);
+  }, [workflow]);
 
   const linesGeo = useMemo(() => {
     const geo = new THREE.BufferGeometry();
@@ -278,9 +228,9 @@ function DataConstellation({ isReducedMotion }: { isReducedMotion: boolean }) {
 }
 
 // --- 3. Subtle 3D Wireframe Ground Plane (Ampliado 70x70) ---
-function WireframeGround() {
+function WireframeGround({ segments }: { segments: number }) {
   const geometry = useMemo(() => {
-    const geo = new THREE.PlaneGeometry(70, 70, 80, 80);
+    const geo = new THREE.PlaneGeometry(70, 70, segments, segments);
     geo.rotateX(-Math.PI / 2);
     geo.translate(0, -3.2, 0);
 
@@ -292,7 +242,7 @@ function WireframeGround() {
       pos.setY(i, -3.2 + Math.sin(dist * 0.4) * 0.15);
     }
     return geo;
-  }, []);
+  }, [segments]);
 
   return (
     <mesh geometry={geometry}>
@@ -300,7 +250,7 @@ function WireframeGround() {
         color={PALETTE.cyan}
         wireframe
         transparent
-        opacity={0.14}
+        opacity={0.045}
       />
     </mesh>
   );
@@ -340,10 +290,8 @@ function FloatingDust({ count }: { count: number }) {
     const currentCount = Math.min(count, posAttr.count);
     for (let i = 0; i < currentCount; i++) {
       let y = posAttr.getY(i) + delta * 0.15;
-      let x = posAttr.getX(i) + Math.sin(state.clock.getElapsedTime() * 0.4 + i) * 0.003;
       if (y > 5.0) y = -3.0;
       posAttr.setY(i, y);
-      posAttr.setX(i, x);
     }
     posAttr.needsUpdate = true;
   });
@@ -380,6 +328,7 @@ function FloatingDust({ count }: { count: number }) {
 function CameraRig({ isReducedMotion }: { isReducedMotion: boolean }) {
   const { camera, pointer } = useThree();
   const angleRef = useRef(0);
+  const targetVec = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((_, delta) => {
     if (isReducedMotion) {
@@ -388,7 +337,7 @@ function CameraRig({ isReducedMotion }: { isReducedMotion: boolean }) {
       return;
     }
 
-    angleRef.current += delta * 0.08;
+    angleRef.current = Math.sin(_.clock.elapsedTime * 0.15) * 0.12;
 
     const mouseX = pointer.x * 1.6;
     const mouseY = pointer.y * 0.8;
@@ -398,11 +347,19 @@ function CameraRig({ isReducedMotion }: { isReducedMotion: boolean }) {
     const camZ = Math.cos(angleRef.current) * radius;
     const camY = 4.2 + mouseY;
 
-    camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.05);
+    camera.position.lerp(targetVec.set(camX, camY, camZ), 1 - Math.exp(-3 * delta));
     camera.lookAt(0, 0.1, 0);
   });
 
   return null;
+}
+
+function WorkflowNetwork({ workflow, reduced }: { workflow: number; reduced: boolean }) {
+  const group = useRef<THREE.Group>(null!);
+  useFrame((_, delta) => {
+    if (group.current) group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, workflow * 0.7, 5, delta);
+  });
+  return <group ref={group}><DataConstellation isReducedMotion={reduced} workflow={workflow} /></group>;
 }
 
 // --- 6. Main 3D Scene Composition ---
@@ -410,10 +367,12 @@ function ConstellationScene({
   isReducedMotion,
   config,
   recordFrameTime,
+  workflow,
 }: {
   isReducedMotion: boolean;
   config: import('@/lib/graphics/types').TierConfig;
   recordFrameTime: (deltaMs: number) => void;
+  workflow: number;
 }) {
   const { size } = useThree();
 
@@ -423,7 +382,6 @@ function ConstellationScene({
 
   return (
     <>
-      <CanvasResizeHandler />
       <CameraRig isReducedMotion={isReducedMotion} />
 
       <ambientLight intensity={0.35} color={PALETTE.bg} />
@@ -431,13 +389,12 @@ function ConstellationScene({
       <pointLight position={[0, -1, 0]} intensity={1.4} color={PALETTE.emerald} distance={12} />
 
       <AICore isReducedMotion={isReducedMotion} />
-      <DataConstellation isReducedMotion={isReducedMotion} />
-      <WireframeGround />
+      <WorkflowNetwork workflow={workflow} reduced={isReducedMotion} />
+      <WireframeGround segments={config.wireframeSubdivisions} />
       <FloatingDust count={config.particleCount} />
 
       {(config.enableBloom || config.enableDepthOfField) ? (
         <EffectComposer
-          key={`${Math.round(size.width)}-${Math.round(size.height)}`}
           enableNormalPass={false}
         >
           {config.enableBloom ? (
@@ -462,18 +419,21 @@ function ConstellationScene({
 }
 
 // --- 7. Self-Contained Default Export Component ---
-export default function XolumHeroScene() {
+export default function XolumHeroScene({ paused = false, workflow = 0 }: { paused?: boolean; workflow?: number }) {
   const containerRef = useRef<HTMLDivElement>(null!);
   const [isInView, setIsInView] = useState(true);
+  const [pageVisible, setPageVisible] = useState(true);
+  useEffect(() => {
+    const update = () => setPageVisible(!document.hidden);
+    update(); document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
+  }, []);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
 
   const { config, recordFrameTime } = useAdaptiveQuality();
 
   // Live OS Telemetry state
-  const [latency, setLatency] = useState(12);
-  const [nodesCount, setNodesCount] = useState(22);
-  const [aiState, setAiState] = useState<'ACTIVE' | 'PROCESSING' | 'OPTIMIZED'>('ACTIVE');
-  const [statusPulse, setStatusPulse] = useState(true);
+  const statusPulse = true;
 
   // 3D Card tilt lerp state
   const targetRotation = useRef({ x: 0, y: 0 });
@@ -507,36 +467,9 @@ export default function XolumHeroScene() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Live System OS Telemetry updates (subtle, non-repetitive micro changes)
-  useEffect(() => {
-    const latencyInterval = setInterval(() => {
-      setLatency(10 + Math.floor(Math.random() * 5));
-    }, 2800);
-
-    const nodesInterval = setInterval(() => {
-      setNodesCount(22 + (Math.random() > 0.6 ? 1 : 0));
-    }, 4200);
-
-    const aiInterval = setInterval(() => {
-      const states: ('ACTIVE' | 'PROCESSING' | 'OPTIMIZED')[] = ['ACTIVE', 'OPTIMIZED', 'ACTIVE', 'PROCESSING'];
-      setAiState(states[Math.floor(Math.random() * states.length)]);
-    }, 5500);
-
-    const pulseInterval = setInterval(() => {
-      setStatusPulse((prev) => !prev);
-    }, 1800);
-
-    return () => {
-      clearInterval(latencyInterval);
-      clearInterval(nodesInterval);
-      clearInterval(aiInterval);
-      clearInterval(pulseInterval);
-    };
-  }, []);
-
   // 3D Tilt RAF loop
   useEffect(() => {
-    if (isReducedMotion) return;
+    if (isReducedMotion || paused || !isInView || !pageVisible) return;
 
     let rafId: number;
     const animateTilt = () => {
@@ -552,7 +485,7 @@ export default function XolumHeroScene() {
 
     animateTilt();
     return () => cancelAnimationFrame(rafId);
-  }, [isReducedMotion]);
+  }, [isReducedMotion, paused, isInView, pageVisible]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isReducedMotion || !containerRef.current) return;
@@ -564,8 +497,8 @@ export default function XolumHeroScene() {
     const normY = (e.clientY - centerY) / (rect.height / 2);
 
     targetRotation.current = {
-      x: -normY * 3.2,
-      y: normX * 3.2,
+      x: -normY * 1.2,
+      y: normX * 1.2,
     };
   };
 
@@ -584,7 +517,7 @@ export default function XolumHeroScene() {
       <div
         ref={cardRef}
         className="w-full h-full relative"
-        style={{ transformStyle: 'preserve-3d', transition: 'transform 0.05s ease-out' }}
+        style={{ transformStyle: 'preserve-3d', transition: 'none' }}
       >
         {/* Layer A: Scanline texture */}
         <div
@@ -599,7 +532,7 @@ export default function XolumHeroScene() {
 
         {/* Layer B: Header Telemetry OS Bar */}
         <div
-          className="pointer-events-none absolute top-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[10px] text-[#22d3ee]/80 border-b border-[#22d3ee]/20 pb-1.5"
+          className="pointer-events-none absolute top-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[11px] text-[#22d3ee]/80 border-b border-[#22d3ee]/20 pb-1.5"
           style={{ transform: 'translateZ(20px)' }}
         >
           <div className="flex items-center gap-2 text-[#22d3ee]">
@@ -608,23 +541,23 @@ export default function XolumHeroScene() {
           </div>
           <div className="tracking-widest text-[#10b981] font-semibold flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
-            STATUS: {config.tier}
+            DEMO INTERACTIVA
           </div>
         </div>
 
         {/* Layer C: Footer Telemetry OS Bar */}
         <div
-          className="pointer-events-none absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[9px] text-[#22d3ee]/70"
+          className="pointer-events-none absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[11px] text-[#22d3ee]/70"
           style={{ transform: 'translateZ(20px)' }}
         >
           <div className="flex items-center gap-2">
-            <span>NODES: {nodesCount}</span>
+            <span>{['ALMACÉN', 'FACTURACIÓN', 'CITAS'][workflow]}</span>
             <span className="opacity-40">//</span>
-            <span>LATENCY: {latency}ms</span>
+            <span>WHATSAPP → IA</span>
           </div>
           <div className="text-[#10b981] font-semibold flex items-center gap-1">
             <span className="w-1 h-1 rounded-full bg-[#10b981]" />
-            AI_ENGINE: {aiState}
+            RESULTADO → CLIENTE
           </div>
         </div>
 
@@ -634,7 +567,7 @@ export default function XolumHeroScene() {
             className="absolute inset-0 w-full h-full"
             camera={{ position: [0, 4.5, 12.0], fov: 40 }}
             dpr={[config.minDpr, config.maxDpr]}
-            frameloop={isReducedMotion || config.frameloop === 'never' ? 'never' : isInView ? config.frameloop : 'never'}
+            frameloop="never"
             gl={{
               antialias: true,
               alpha: true,
@@ -649,10 +582,12 @@ export default function XolumHeroScene() {
               background: 'transparent',
             }}
           >
+            <SceneLoop running={!paused && isInView && pageVisible && !isReducedMotion} fps={config.targetFps} />
             <ConstellationScene
               isReducedMotion={isReducedMotion}
               config={config}
               recordFrameTime={recordFrameTime}
+              workflow={workflow}
             />
           </Canvas>
         </div>

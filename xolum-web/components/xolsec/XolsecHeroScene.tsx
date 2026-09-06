@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { SceneLoop } from '@/lib/graphics/SceneLoop';
 import { useAdaptiveQuality } from '@/lib/graphics/quality';
 
 // Color Palette Locked to XOLUM Brand
@@ -48,57 +49,6 @@ const NODES: DetectionNode[] = NODES_DATA.map((n) => ({
 }));
 
 // --- 0. Control Activo del Tamaño del Canvas ---
-function CanvasResizeHandler() {
-  const { gl, camera, invalidate } = useThree();
-
-  useEffect(() => {
-    let animId: number;
-    const startTime = performance.now();
-
-    const checkSize = () => {
-      const parent = gl.domElement.parentElement;
-      if (parent) {
-        const width = parent.clientWidth;
-        const height = parent.clientHeight;
-
-        if (width > 0 && height > 0) {
-          if (camera instanceof THREE.PerspectiveCamera) {
-            const aspect = width / height;
-            if (Math.abs(camera.aspect - aspect) > 0.001) {
-              camera.aspect = aspect;
-              camera.updateProjectionMatrix();
-              invalidate();
-            }
-          }
-        }
-      }
-
-      if (performance.now() - startTime < 2500) {
-        animId = requestAnimationFrame(checkSize);
-      }
-    };
-
-    checkSize();
-
-    const ro = new ResizeObserver(() => {
-      checkSize();
-    });
-
-    if (gl.domElement.parentElement) {
-      ro.observe(gl.domElement.parentElement);
-    }
-
-    window.addEventListener('resize', checkSize);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      ro.disconnect();
-      window.removeEventListener('resize', checkSize);
-    };
-  }, [gl, camera, invalidate]);
-
-  return null;
-}
 
 // --- 1. Procedural 3D Terrain Grid Component (100% oculto en Fase 1 y 2) ---
 function TerrainGrid({
@@ -108,6 +58,8 @@ function TerrainGrid({
   accumTimeRef: React.MutableRefObject<number>;
   isReducedMotion: boolean;
 }) {
+  const { config } = useAdaptiveQuality();
+  const terrainRef = useRef<THREE.Group>(null!);
   const baseMatRef = useRef<THREE.MeshBasicMaterial>(null!);
   const gridMatRef = useRef<THREE.MeshBasicMaterial>(null!);
   const ringsMatRef = useRef<THREE.LineBasicMaterial>(null!);
@@ -117,7 +69,7 @@ function TerrainGrid({
     const height = 70;
     // 54 segmentos bastan para la malla del radar; 90 tesela de más (se dibuja
     // como base sólida + wireframe) sin ganancia visual perceptible.
-    const segments = 54;
+    const segments = config.wireframeSubdivisions;
 
     const planeGeo = new THREE.PlaneGeometry(width, height, segments, segments);
     planeGeo.rotateX(-Math.PI / 2);
@@ -152,7 +104,7 @@ function TerrainGrid({
     ringsGroupGeo.setAttribute('position', new THREE.Float32BufferAttribute(ringVerts, 3));
 
     return { geometry: planeGeo, ringsGeometry: ringsGroupGeo };
-  }, []);
+  }, [config.wireframeSubdivisions]);
 
   useFrame(() => {
     if (isReducedMotion) {
@@ -163,23 +115,24 @@ function TerrainGrid({
     }
 
     const elapsed = accumTimeRef.current;
+    if (terrainRef.current) terrainRef.current.position.y = -4 * (1 - THREE.MathUtils.smoothstep(elapsed, 4.8, 5.8));
 
     // FASE 1 y FASE 2 (0.0s -> 4.8s): Terreno 100% OCULTO (opacidad = 0)
     // FASE 3 (4.8s -> 5.8s): Fade in suave del terreno cuando la cámara desaparece
-    let fade = 0;
+    let fade = 0.45 * Math.min(1, elapsed / 0.7);
     if (elapsed >= 4.8) {
-      fade = Math.min(1.0, (elapsed - 4.8) / 1.0);
+      fade = 0.45 + 0.55 * Math.min(1.0, (elapsed - 4.8) / 1.0);
     }
 
     if (baseMatRef.current) baseMatRef.current.opacity = 0.75 * fade;
-    if (gridMatRef.current) gridMatRef.current.opacity = 0.25 * fade;
-    if (ringsMatRef.current) ringsMatRef.current.opacity = 0.38 * fade;
+    if (gridMatRef.current) gridMatRef.current.opacity = 0.09 * fade;
+    if (ringsMatRef.current) ringsMatRef.current.opacity = 0.22 * fade;
   });
 
   return (
-    <group>
+    <group ref={terrainRef} position={[0, -4, 0]}>
       <mesh geometry={geometry}>
-        <meshBasicMaterial ref={baseMatRef} color={PALETTE.bg} transparent opacity={0} side={THREE.DoubleSide} />
+        <meshBasicMaterial ref={baseMatRef} color={PALETTE.bg} transparent depthWrite={false} opacity={0} side={THREE.DoubleSide} />
       </mesh>
 
       <mesh geometry={geometry}>
@@ -211,18 +164,18 @@ function PTZCameraAssembly({
   const mainGroupRef = useRef<THREE.Group>(null!);
 
   const mountGroupRef = useRef<THREE.Group>(null!);
-  const mountMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const mountMatRef = useRef<THREE.MeshStandardMaterial>(null!);
   const mountWireMatRef = useRef<THREE.LineBasicMaterial>(null!);
 
   const podGroupRef = useRef<THREE.Group>(null!);
-  const podSolidMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const podSolidMatRef = useRef<THREE.MeshStandardMaterial>(null!);
   const podWireMatRef = useRef<THREE.LineBasicMaterial>(null!);
   const podCollarMatRef = useRef<THREE.MeshBasicMaterial>(null!);
 
   const lensGroupRef = useRef<THREE.Group>(null!);
   const bezelMatRef = useRef<THREE.MeshBasicMaterial>(null!);
   const barrelMatRef = useRef<THREE.MeshBasicMaterial>(null!);
-  const glassMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const glassMatRef = useRef<THREE.MeshPhysicalMaterial>(null!);
   const irisDotMatRef = useRef<THREE.MeshBasicMaterial>(null!);
   const irRingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
 
@@ -310,12 +263,15 @@ function PTZCameraAssembly({
       const angle = (i / irCount) * Math.PI * 2;
       const x = Math.cos(angle) * irRadius;
       const y = -0.05 + Math.sin(angle) * irRadius;
-      const tempSphere = new THREE.SphereGeometry(0.038, 12, 12);
+      const indexedSphere = new THREE.SphereGeometry(0.038, 12, 12);
+      const tempSphere = indexedSphere.toNonIndexed();
+      indexedSphere.dispose();
       tempSphere.translate(x, y, 0.86);
       const posAttr = tempSphere.attributes.position;
       for (let j = 0; j < posAttr.count; j++) {
         irVerts.push(posAttr.getX(j), posAttr.getY(j), posAttr.getZ(j));
       }
+      tempSphere.dispose();
     }
     const irRing = new THREE.BufferGeometry();
     irRing.setAttribute('position', new THREE.Float32BufferAttribute(irVerts, 3));
@@ -364,13 +320,17 @@ function PTZCameraAssembly({
   function combineGeometries(geos: THREE.BufferGeometry[]): THREE.BufferGeometry {
     const verts: number[] = [];
     geos.forEach((g) => {
-      const pos = g.attributes.position;
+      const flat = g.index ? g.toNonIndexed() : g;
+      const pos = flat.attributes.position;
       for (let i = 0; i < pos.count; i++) {
         verts.push(pos.getX(i), pos.getY(i), pos.getZ(i));
       }
+      if (flat !== g) flat.dispose();
+      g.dispose();
     });
     const combined = new THREE.BufferGeometry();
     combined.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    combined.computeVertexNormals();
     return combined;
   }
 
@@ -407,7 +367,8 @@ function PTZCameraAssembly({
     const pPod = Math.max(0, Math.min(1.0, (elapsed - 0.6) / 0.8));
     const easePod = 1.0 - Math.pow(1.0 - pPod, 3);
     if (podGroupRef.current) {
-      podGroupRef.current.scale.setScalar(easePod);
+      podGroupRef.current.scale.setScalar(1);
+      podGroupRef.current.position.y = -0.65 * (1 - easePod);
     }
     if (podSolidMatRef.current) {
       podSolidMatRef.current.opacity = easePod * 0.95 * fadeOut;
@@ -457,9 +418,10 @@ function PTZCameraAssembly({
       const tTilt = (elapsed - 2.2) / 0.3;
       tiltAngle = 0.16 + 0.34 * (1.0 - Math.cos(tTilt * Math.PI * 0.5));
     } else if (elapsed >= 2.5 && elapsed <= 5.0) {
-      const ptzTime = (elapsed - 2.5) * 2.2;
-      panAngle = Math.sin(ptzTime) * 0.62;
-      tiltAngle = 0.50 + Math.cos(ptzTime * 0.8) * 0.08;
+      const progress = Math.min(1, (elapsed - 2.5) / 2.1);
+      const eased = progress * progress * (3 - 2 * progress);
+      panAngle = Math.sin(eased * Math.PI * 2) * 0.55;
+      tiltAngle = 0.5;
     }
 
     if (ptzHeadRef.current) {
@@ -469,9 +431,9 @@ function PTZCameraAssembly({
 
     let coneOpacity = 0;
     if (elapsed >= 2.5 && elapsed < 5.0) {
-      coneOpacity = 0.38;
-    } else if (elapsed >= 5.0 && elapsed < 5.5) {
-      coneOpacity = 0.38 * (1.0 - (elapsed - 5.0) / 0.5);
+      coneOpacity = 0.07;
+    } else if (elapsed >= 5.0 && elapsed < 6.0) {
+      coneOpacity = 0.07 * (1.0 - (elapsed - 5.0));
     }
 
     if (visionConeMatRef.current) {
@@ -497,7 +459,7 @@ function PTZCameraAssembly({
       {/* 1) Montura Superior e Horquilla Industrial */}
       <group ref={mountGroupRef}>
         <mesh geometry={mountSolidGeo}>
-          <meshBasicMaterial ref={mountMatRef} color={PALETTE.bg} transparent opacity={0} side={THREE.DoubleSide} />
+          <meshStandardMaterial ref={mountMatRef} color="#415765" roughness={0.48} metalness={0.65} transparent opacity={0} side={THREE.DoubleSide} />
         </mesh>
         <lineSegments geometry={mountEdgesGeo}>
           <lineBasicMaterial ref={mountWireMatRef} color={PALETTE.emerald} transparent opacity={0} linewidth={1.5} />
@@ -509,7 +471,7 @@ function PTZCameraAssembly({
         <group ref={podGroupRef}>
           {/* Cuerpo sólido interior oscuro */}
           <mesh geometry={podSolidGeo}>
-            <meshBasicMaterial ref={podSolidMatRef} color={PALETTE.bg} transparent opacity={0} side={THREE.DoubleSide} />
+            <meshStandardMaterial ref={podSolidMatRef} color="#415765" roughness={0.48} metalness={0.65} transparent opacity={0} side={THREE.DoubleSide} />
           </mesh>
           {/* Collar de acento esmeralda en el ecuador */}
           <mesh geometry={podCollarGeo}>
@@ -530,7 +492,7 @@ function PTZCameraAssembly({
             <meshBasicMaterial ref={barrelMatRef} color={PALETTE.cyan} wireframe transparent opacity={0} />
           </mesh>
           <mesh geometry={glassGeo}>
-            <meshBasicMaterial ref={glassMatRef} color={PALETTE.cyan} transparent opacity={0} side={THREE.DoubleSide} />
+            <meshPhysicalMaterial ref={glassMatRef} color="#163b4a" roughness={0.12} metalness={0.3} clearcoat={1} emissive={PALETTE.cyan} emissiveIntensity={0.12} transparent opacity={0} side={THREE.DoubleSide} />
           </mesh>
           <mesh geometry={irisDotGeo}>
             <meshBasicMaterial ref={irisDotMatRef} color={PALETTE.emerald} transparent opacity={0} />
@@ -672,7 +634,7 @@ function RadarSweep({
 
     if (shaderRef.current) {
       shaderRef.current.uniforms.uSweepAngle.value = sweep;
-      shaderRef.current.uniforms.uTime.value = state.clock.getElapsedTime();
+      shaderRef.current.uniforms.uTime.value = state.clock.elapsedTime;
       shaderRef.current.uniforms.uOpacity.value = sweepOpacity;
     }
     if (leadLineRef.current) {
@@ -810,8 +772,8 @@ function NodeItem({
       const diff = Math.abs(sweep - nodeAngle);
       const PI2 = Math.PI * 2;
       const minDiff = Math.min(diff, PI2 - diff);
-      if (minDiff < 0.22) lastSweepRef.current = state.clock.getElapsedTime();
-      const elapsedSweep = state.clock.getElapsedTime() - lastSweepRef.current;
+      if (minDiff < 0.22) lastSweepRef.current = state.clock.elapsedTime;
+      const elapsedSweep = state.clock.elapsedTime - lastSweepRef.current;
       act = elapsedSweep < 3.0 ? Math.max(0, 1.0 - elapsedSweep / 3.0) : 0.08;
     }
     const isActive = act > 0.35;
@@ -832,7 +794,7 @@ function NodeItem({
       boxMatRef.current.opacity = isVisible ? (isActive ? 0.95 : 0.4) : 0;
     }
 
-    if (labelWrapRef.current) labelWrapRef.current.style.display = isVisible ? 'block' : 'none';
+    if (labelWrapRef.current) labelWrapRef.current.style.display = act > 0.9 ? 'block' : 'none';
     if (labelInnerRef.current) {
       labelInnerRef.current.style.opacity = String(Math.min(1, act * 1.4));
       labelInnerRef.current.style.transform = `scale(${0.9 + act * 0.15})`;
@@ -857,19 +819,19 @@ function NodeItem({
         </lineSegments>
       </group>
 
-      <Html position={[0, 1.3, 0]} center distanceFactor={14} zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
+      <Html position={[0, 1.3, 0]} center distanceFactor={14} zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
         <div ref={labelWrapRef} style={{ display: 'none' }}>
           <div
             ref={labelInnerRef}
             style={{ transition: 'opacity 0.25s ease, transform 0.25s ease' }}
-            className="flex flex-col items-start font-mono text-[10px] tracking-wider leading-tight text-[#10b981] bg-[#06090e]/95 border border-[#10b981]/50 px-2 py-1 rounded shadow-[0_0_12px_rgba(16,185,129,0.35)] whitespace-nowrap select-none"
+            className="flex flex-col items-start font-mono text-[11px] tracking-wider leading-tight text-[#10b981] bg-[#06090e]/95 border border-[#10b981]/50 px-2 py-1 rounded shadow-[0_0_12px_rgba(16,185,129,0.35)] whitespace-nowrap select-none"
           >
             <div className="flex items-center gap-1.5 border-b border-[#10b981]/30 pb-0.5 mb-0.5 w-full">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#10b981] animate-ping" />
               <span className="font-bold text-[#f3f6fb]">{node.label}</span>
-              <span className="text-[9px] text-[#22d3ee] font-semibold ml-auto">{node.confidence}</span>
+              <span className="text-[11px] text-[#22d3ee] font-semibold ml-auto">{node.confidence}</span>
             </div>
-            <div className="text-[8.5px] text-[#22d3ee]/80">
+            <div className="text-[11px] text-[#22d3ee]/80">
               ID: SEC_0{node.id} // {node.category}
             </div>
           </div>
@@ -880,8 +842,7 @@ function NodeItem({
 }
 
 // --- 6. Floating Dust Particles Component ---
-function FloatingDust() {
-  const count = 150;
+function FloatingDust({ count }: { count: number }) {
   const meshRef = useRef<THREE.Points>(null!);
 
   const [positions, colors] = useMemo(() => {
@@ -904,7 +865,7 @@ function FloatingDust() {
     }
 
     return [posArray, colorArray];
-  }, []);
+  }, [count]);
 
   useFrame((_, delta) => {
     if (!meshRef.current) return;
@@ -1009,7 +970,7 @@ function CameraRig({
       lookAtY = 0.4;
     }
 
-    camera.position.lerp(targetVec.set(targetX, targetY, targetZ), 0.06);
+    camera.position.lerp(targetVec.set(targetX, targetY, targetZ), 1 - Math.exp(-4 * delta));
     camera.lookAt(0, lookAtY, 0);
   });
 
@@ -1034,8 +995,8 @@ function HUDPhaseController({
     if (isReducedMotion) {
       if (lastPhaseRef.current !== 2) {
         lastPhaseRef.current = 2;
-        if (hudTextRef.current) hudTextRef.current.innerText = 'XOLSEC RADAR v4.2';
-        if (hudStatusRef.current) hudStatusRef.current.innerText = 'SYS_STATUS: ONLINE';
+        if (hudTextRef.current) hudTextRef.current.innerText = 'PERSONA DETECTADA · ZONA RESTRINGIDA';
+        if (hudStatusRef.current) hudStatusRef.current.innerText = 'AVISO SIMULADO';
       }
       return;
     }
@@ -1052,14 +1013,14 @@ function HUDPhaseController({
       lastPhaseRef.current = phase;
       if (hudTextRef.current && hudStatusRef.current) {
         if (phase === 0) {
-          hudTextRef.current.innerText = 'CALIBRANDO SENSOR // PTZ-CAM-01';
-          hudStatusRef.current.innerText = 'SYS_STATUS: CALIBRATING';
+          hudTextRef.current.innerText = 'ENSAMBLAJE · CÁMARA PTZ';
+          hudStatusRef.current.innerText = '01 / 03';
         } else if (phase === 1) {
-          hudTextRef.current.innerText = 'BARRIDO PTZ // PERÍMETRO';
-          hudStatusRef.current.innerText = 'SYS_STATUS: SCANNING';
+          hudTextRef.current.innerText = 'VIGILANCIA · PERÍMETRO';
+          hudStatusRef.current.innerText = '02 / 03';
         } else {
-          hudTextRef.current.innerText = 'XOLSEC RADAR v4.2';
-          hudStatusRef.current.innerText = 'SYS_STATUS: ONLINE';
+          hudTextRef.current.innerText = 'PERSONA DETECTADA · ZONA RESTRINGIDA';
+          hudStatusRef.current.innerText = 'AVISO SIMULADO';
         }
       }
     }
@@ -1112,7 +1073,6 @@ function RadarSceneContent({
 
   return (
     <>
-      <CanvasResizeHandler />
       <CameraRig accumTimeRef={accumTimeRef} isReducedMotion={isReducedMotion} />
       <HUDPhaseController
         accumTimeRef={accumTimeRef}
@@ -1121,7 +1081,8 @@ function RadarSceneContent({
         hudStatusRef={hudStatusRef}
       />
 
-      <ambientLight intensity={0.4} color={PALETTE.bg} />
+      <ambientLight intensity={0.9} color="#d7e8f0" />
+      <directionalLight position={[-3, 4, 5]} intensity={3} color="#e6f2ff" />
       <directionalLight position={[5, 10, 5]} intensity={0.8} color={PALETTE.emerald} />
       <pointLight position={[0, 4, 0]} intensity={1.5} color={PALETTE.cyan} distance={15} />
 
@@ -1139,11 +1100,10 @@ function RadarSceneContent({
         />
       ))}
 
-      <FloatingDust />
+      <FloatingDust count={Math.min(config.particleCount, 300)} />
 
       {config.enableBloom ? (
         <EffectComposer
-          key={`${Math.round(size.width)}-${Math.round(size.height)}`}
           enableNormalPass={false}
         >
           <Bloom
@@ -1159,9 +1119,15 @@ function RadarSceneContent({
 }
 
 // --- 10. Self-Contained Default Export Component ---
-export default function XolsecHeroScene() {
+export default function XolsecHeroScene({ paused = false }: { paused?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null!);
   const [isInView, setIsInView] = useState(true);
+  const [pageVisible, setPageVisible] = useState(true);
+  useEffect(() => {
+    const update = () => setPageVisible(!document.hidden);
+    update(); document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
+  }, []);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
 
   const { config, recordFrameTime } = useAdaptiveQuality();
@@ -1212,7 +1178,7 @@ export default function XolsecHeroScene() {
       />
 
       {/* Top HUD Frame Header */}
-      <div className="pointer-events-none absolute top-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[10px] text-[#22d3ee]/80 border-b border-[#10b981]/20 pb-1.5">
+      <div className="pointer-events-none absolute top-3 left-3 right-3 z-20 rounded bg-[#070b12]/95 px-2 py-1 flex flex-wrap gap-2 items-center justify-between font-mono text-[11px] text-[#22d3ee]/80 border-b border-[#10b981]/20 pb-1.5">
         <div className="flex items-center gap-2 text-[#10b981]">
           <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
           <span ref={hudTextRef} className="font-bold tracking-widest">
@@ -1220,14 +1186,14 @@ export default function XolsecHeroScene() {
           </span>
         </div>
         <div ref={hudStatusRef} className="tracking-widest font-semibold text-[#10b981]">
-          SYS_STATUS: {config.tier}
+          DEMO
         </div>
       </div>
 
       {/* Bottom HUD Coordinates */}
-      <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between font-mono text-[9px] text-[#10b981]/70">
-        <div>LAT: 19°25&apos;42&quot;N // LON: 99°07&apos;39&quot;W</div>
-        <div className="text-[#22d3ee]">BEAM_FREQ: 24.150 GHz</div>
+      <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-20 rounded bg-[#070b12]/95 px-2 py-1 flex flex-wrap gap-2 items-center justify-between font-mono text-[11px] text-[#10b981]/70">
+        <div>ZONA ILUSTRATIVA</div>
+        <div className="text-[#22d3ee]">DEMO · DETECCIÓN IA</div>
       </div>
 
       {/* Three.js R3F Canvas Container */}
@@ -1235,7 +1201,7 @@ export default function XolsecHeroScene() {
         className="absolute inset-0 w-full h-full"
         camera={{ position: [0, 0.2, 7.8], fov: 40 }}
         dpr={[config.minDpr, config.maxDpr]}
-        frameloop={isReducedMotion || config.frameloop === 'never' ? 'never' : isInView ? config.frameloop : 'never'}
+        frameloop="never"
         gl={{
           antialias: true,
           alpha: true,
@@ -1250,6 +1216,7 @@ export default function XolsecHeroScene() {
           background: 'transparent',
         }}
       >
+        <SceneLoop running={!paused && isInView && pageVisible && !isReducedMotion} fps={config.targetFps} />
         <RadarSceneContent
           isReducedMotion={isReducedMotion}
           hudTextRef={hudTextRef}

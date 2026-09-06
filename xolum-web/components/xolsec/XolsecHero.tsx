@@ -2,19 +2,11 @@
 
 import { motion, useReducedMotion } from 'motion/react';
 import { ArrowRight, ShieldCheck, Eye } from '@phosphor-icons/react';
-import dynamic from 'next/dynamic';
-import { ScenePoster } from '../ScenePoster';
+import { SceneExperience } from '@/components/SceneExperience';
 import { useDeviceCapabilities } from '@/lib/capabilities';
 import { waLink } from '@/lib/data';
 
-const XolsecHeroScene = dynamic(() => import('./XolsecHeroScene'), {
-  ssr: false,
-  loading: () => (
-    <div className="stage-dark w-full h-full aspect-square rounded-2xl border border-[#10b981]/25 bg-[#070b12] flex items-center justify-center font-mono text-xs text-[#10b981]/70">
-      CARGANDO RADAR TÁCTICO 3D...
-    </div>
-  ),
-});
+
 
 export function XolsecHero() {
   const reduce = useReducedMotion();
@@ -75,9 +67,9 @@ export function XolsecHero() {
           initial={reduce ? {} : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-          className="relative mx-auto hidden aspect-square w-full max-w-[520px] lg:block"
+          className="relative mx-auto w-full max-w-[520px]"
         >
-          {heavy3D ? <XolsecHeroScene /> : <ScenePoster variant="radar" />}
+          <SceneExperience variant="radar" />
         </motion.div>
       </div>
     </section>

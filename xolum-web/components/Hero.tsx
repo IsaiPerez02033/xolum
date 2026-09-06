@@ -1,23 +1,15 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { ArrowRight } from '@phosphor-icons/react';
-import dynamic from 'next/dynamic';
+import { SceneExperience } from '@/components/SceneExperience';
 import { NetworkCanvas } from './NetworkCanvas';
 import { MagneticButton } from './MagneticButton';
-import { ScenePoster } from './ScenePoster';
 import { useDeviceCapabilities } from '@/lib/capabilities';
 import { waLink } from '@/lib/data';
 
-const XolumHeroScene = dynamic(() => import('./XolumHeroScene'), {
-  ssr: false,
-  loading: () => (
-    <div className="stage-dark w-full h-full aspect-square rounded-2xl border border-[#22d3ee]/25 bg-[#070b12] flex items-center justify-center font-mono text-xs text-[#22d3ee]/70">
-      CARGANDO XOLUM CORE 3D...
-    </div>
-  ),
-});
+
 
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -25,8 +17,7 @@ export function Hero() {
   const { heavy3D, ambient } = useDeviceCapabilities();
 
   // Mouse tracking for Spotlight & Multi-layer Parallax
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [spotlightPos, setSpotlightPos] = useState({ x: 0, y: 0 });
+  const spotlightPos = { x: 0, y: 0 };
   const lerpMouse = useRef({ x: 0, y: 0 });
 
   // Scroll Interaction
@@ -39,39 +30,6 @@ export function Hero() {
   const gridParallaxY = useTransform(scrollY, [0, 800], [0, -30]);
   const networkParallaxY = useTransform(scrollY, [0, 800], [0, -45]);
 
-  useEffect(() => {
-    if (reduce) return;
-    // El parallax por cursor sólo tiene sentido con puntero fino (mouse/trackpad).
-    // En táctil evitamos un loop rAF permanente que gasta batería sin efecto.
-    if (typeof window !== 'undefined' && !window.matchMedia('(pointer: fine)').matches) return;
-
-    let rafId: number;
-    const animateParallax = () => {
-      lerpMouse.current.x += (mousePos.x - lerpMouse.current.x) * 0.06;
-      lerpMouse.current.y += (mousePos.y - lerpMouse.current.y) * 0.06;
-      rafId = requestAnimationFrame(animateParallax);
-    };
-
-    animateParallax();
-    return () => cancelAnimationFrame(rafId);
-  }, [mousePos, reduce]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (reduce || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setSpotlightPos({ x, y });
-
-    const normX = (x - rect.width / 2) / (rect.width / 2);
-    const normY = (y - rect.height / 2) / (rect.height / 2);
-    setMousePos({ x: normX, y: normY });
-  };
-
-  const handleMouseLeave = () => {
-    setMousePos({ x: 0, y: 0 });
-  };
-
   const rise = (d: number) => ({
     initial: reduce ? {} : { opacity: 0, y: 24 },
     animate: { opacity: 1, y: 0 },
@@ -82,8 +40,6 @@ export function Hero() {
     <section
       ref={containerRef}
       id="top"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       className="relative min-h-dvh overflow-hidden pt-24 select-none"
     >
       {/* LAYER 0: Dynamic Cursor Spotlight Glow */}
@@ -113,7 +69,7 @@ export function Hero() {
       </motion.div>
 
       {/* LAYER 2: Live Network Canvas with Parallax (sólo en equipos capaces) */}
-      {ambient && (
+      {ambient && !heavy3D && (
         <motion.div
           style={{ opacity: heroBgOpacity, y: networkParallaxY }}
           className="absolute inset-0 opacity-70 z-0"
@@ -147,7 +103,7 @@ export function Hero() {
       <div className="shell relative z-10 grid min-h-dvh-nav grid-cols-1 items-center gap-10 pb-16 lg:grid-cols-[1.05fr_0.95fr]">
         {/* LAYER 4: Content Column (Text, Chip, Buttons) */}
         <motion.div
-          style={{ y: heroContentY }}
+          style={{ y: reduce ? 0 : heroContentY }}
           className="max-w-2xl transition-transform duration-300 ease-out"
         >
           <div
@@ -181,8 +137,8 @@ export function Hero() {
             <motion.div {...rise(0.24)} className="mt-9 flex flex-wrap items-center gap-4">
               <MagneticButton
                 href={waLink('Hola XOLUM, me interesa agendar una llamada de diagnóstico para mi empresa.')}
-                className="btn-brand group transition-all duration-300 hover:shadow-[0_0_35px_rgba(16,185,129,0.55)]"
-                strength={0.35}
+                className="btn-brand group transition-[color,background-color,border-color,opacity,transform] duration-300 hover:shadow-[0_0_35px_rgba(16,185,129,0.55)]"
+                strength={0.12}
               >
                 Agendar diagnóstico sin costo
                 <ArrowRight
@@ -201,11 +157,11 @@ export function Hero() {
 
         {/* LAYER 5: Main Visual Card (Interactive 3D Card Tilt + Parallax) */}
         <motion.div
-          style={{ y: heroCardY, rotateX: cardScrollRotate }}
+          style={{ y: 0 }}
           initial={reduce ? {} : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-          className="relative mx-auto hidden aspect-square w-full max-w-[520px] lg:block z-10 transition-transform duration-300 ease-out"
+          className="relative mx-auto w-full max-w-[520px] z-10 transition-transform duration-300 ease-out"
         >
           <div
             style={{
@@ -215,7 +171,7 @@ export function Hero() {
             }}
             className="w-full h-full"
           >
-            {heavy3D ? <XolumHeroScene /> : <ScenePoster variant="core" />}
+            <SceneExperience variant="core" />
           </div>
         </motion.div>
       </div>

@@ -40,7 +40,7 @@ function LogoTile({ p }: { p: Proyecto }) {
       </div>
 
       {/* Etiqueta de tipo, aparece al hover */}
-      <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-[#06090e] via-[#06090e]/90 to-transparent px-4 pb-3 pt-8 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+      <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-[#06090e] via-[#06090e]/90 to-transparent px-4 pb-3 pt-8 opacity-0 transition-[color,background-color,border-color,opacity,transform] duration-300 group-hover:translate-y-0 group-hover:opacity-100">
         <p className="text-sm font-semibold text-white">{p.nombre}</p>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-brand-300">{p.tipo}</p>
       </figcaption>
@@ -127,7 +127,7 @@ export function Proyectos() {
                     <button
                       key={p.nombre}
                       onClick={() => setSelectedIdx(idx)}
-                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-xs font-semibold text-left transition-all ${
+                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-xs font-semibold text-left transition-[color,background-color,border-color,opacity,transform] ${
                         idx === selectedIdx
                           ? 'border border-brand-400 bg-brand-500/20 text-brand-700 dark:text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]'
                           : 'border border-[var(--hair)] bg-[var(--surface)] text-[var(--text-soft)] hover:border-brand-400/30 hover:text-[var(--text)]'

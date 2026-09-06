@@ -26,6 +26,8 @@ const nextConfig = {
   },
 
   async headers() {
+    // Development chunks keep their filenames across edits; never cache them as immutable.
+    if (process.env.NODE_ENV === 'development') return [];
     return [
       {
         // Los assets con hash de Next son inmutables: caché de 1 año.

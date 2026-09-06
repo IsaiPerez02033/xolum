@@ -30,7 +30,7 @@ export function Nav() {
     <header className="fixed inset-x-0 top-0 z-50">
       <div className="shell">
         <nav
-          className={`mt-3 flex h-16 items-center justify-between rounded-2xl px-4 transition-all duration-300 ${
+          className={`mt-3 flex h-16 items-center justify-between rounded-2xl px-4 transition-[color,background-color,border-color,opacity,transform] duration-300 ${
             scrolled ? 'glass border-brand-400/20 shadow-xl backdrop-blur-xl' : 'border border-transparent bg-transparent'
           }`}
         >
@@ -43,7 +43,7 @@ export function Nav() {
               className="h-9 w-9 object-contain transition-transform group-hover:scale-105"
               priority
             />
-            <span className="text-lg font-extrabold tracking-tight text-white group-hover:text-brand-300 transition-colors">
+            <span className="text-lg font-extrabold tracking-tight text-[var(--text)] group-hover:text-brand-300 transition-colors">
               XOLUM
             </span>
           </a>
@@ -53,10 +53,10 @@ export function Nav() {
               <a
                 key={l.href}
                 href={l.href}
-                className={`rounded-full px-4 py-2 text-xs font-semibold tracking-wide transition-all ${
+                className={`rounded-full px-4 py-2 text-xs font-semibold tracking-wide transition-[color,background-color,border-color,opacity,transform] ${
                   l.badge
                     ? 'inline-flex items-center gap-1.5 border border-emerald-400/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'
-                    : 'text-[var(--text-soft)] hover:bg-[var(--surface-2)] hover:text-white'
+                    : 'text-[var(--text-soft)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]'
                 }`}
               >
                 {l.badge && <ShieldCheck size={14} weight="fill" className="text-emerald-400" />}
@@ -81,7 +81,7 @@ export function Nav() {
             <ThemeToggle />
             <button
               onClick={() => setOpen((v) => !v)}
-              aria-label="Menú principal"
+              aria-label="Menú principal" aria-expanded={open} aria-controls="mobile-navigation"
               className="p-2 text-[var(--text)] hover:text-brand-300"
             >
               {open ? <X size={24} /> : <List size={24} />}
@@ -90,7 +90,7 @@ export function Nav() {
         </nav>
 
         {open && (
-          <div className="glass mt-2 flex flex-col gap-1.5 rounded-2xl p-4 lg:hidden border border-brand-400/20 shadow-2xl">
+          <div id="mobile-navigation" className="glass mt-2 flex flex-col gap-1.5 rounded-2xl p-4 lg:hidden border border-brand-400/20 shadow-2xl">
             {links.map((l) => (
               <a
                 key={l.href}
@@ -99,7 +99,7 @@ export function Nav() {
                 className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${
                   l.badge
                     ? 'border border-emerald-400/30 bg-emerald-500/10 text-emerald-300'
-                    : 'text-[var(--text-soft)] hover:bg-[var(--surface-2)] hover:text-white'
+                    : 'text-[var(--text-soft)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]'
                 }`}
               >
                 <span>{l.label}</span>

@@ -2,6 +2,8 @@
 
 import { DeviceSignals, PerformanceTier, TierConfig } from './types';
 
+let cachedWebgl: 0 | 1 | 2 | undefined;
+
 export function evaluateDeviceSignals(): DeviceSignals {
   if (typeof window === 'undefined') {
     return {
@@ -36,6 +38,7 @@ export function evaluateDeviceSignals(): DeviceSignals {
   // Test de WebGL2 / WebGL1 mediante canvas oculto
   let webglVersion: 0 | 1 | 2 = 0;
   try {
+    if (cachedWebgl !== undefined) { webglVersion = cachedWebgl; } else {
     const c = document.createElement('canvas');
     const gl2 = c.getContext('webgl2');
     if (gl2) {
@@ -49,6 +52,8 @@ export function evaluateDeviceSignals(): DeviceSignals {
         const lose = (gl1 as WebGLRenderingContext).getExtension('WEBGL_lose_context');
         lose?.loseContext?.();
       }
+    }
+    cachedWebgl = webglVersion;
     }
   } catch {
     webglVersion = 0;
@@ -70,7 +75,7 @@ export function evaluateDeviceSignals(): DeviceSignals {
 
 export function determineInitialTier(signals: DeviceSignals): PerformanceTier {
   // Preferencias estrictas: Si el usuario pide reducir movimiento, ahorro de datos o red 2G, pasamos a STATIC o MINIMAL
-  if (signals.reducedMotion || signals.saveData || signals.slowNet || signals.webglVersion === 0) {
+  if (signals.reducedMotion || signals.saveData || signals.slowNet || signals.webglVersion < 2) {
     return 'STATIC';
   }
 
@@ -106,11 +111,11 @@ export const TIER_CONFIGS: Record<PerformanceTier, TierConfig> = {
     tier: 'ULTRA',
     targetFps: 60,
     minDpr: 1.25,
-    maxDpr: 2.0,
-    particleCount: 1200,
+    maxDpr: 1.75,
+    particleCount: 420,
     enableBloom: true,
-    enableDepthOfField: true,
-    enableShadows: true,
+    enableDepthOfField: false,
+    enableShadows: false,
     wireframeSubdivisions: 80,
     frameloop: 'always',
     heavy3D: true,
@@ -121,7 +126,7 @@ export const TIER_CONFIGS: Record<PerformanceTier, TierConfig> = {
     targetFps: 60,
     minDpr: 1.0,
     maxDpr: 1.5,
-    particleCount: 700,
+    particleCount: 260,
     enableBloom: true,
     enableDepthOfField: false,
     enableShadows: false,
@@ -135,7 +140,7 @@ export const TIER_CONFIGS: Record<PerformanceTier, TierConfig> = {
     targetFps: 45,
     minDpr: 1.0,
     maxDpr: 1.25,
-    particleCount: 350,
+    particleCount: 150,
     enableBloom: true,
     enableDepthOfField: false,
     enableShadows: false,
