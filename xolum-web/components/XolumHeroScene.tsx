@@ -4,6 +4,7 @@ import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { EffectComposer, Bloom, DepthOfField } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { StudioEnvironment } from '@/lib/graphics/StudioEnvironment';
 import { SceneLoop } from '@/lib/graphics/SceneLoop';
 import { useAdaptiveQuality } from '@/lib/graphics/quality';
 
@@ -26,7 +27,7 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
   const lightRef = useRef<THREE.PointLight>(null!);
 
   const { outerGeo, innerPolyGeo, sphereGeo } = useMemo(() => {
-    const outer = new THREE.IcosahedronGeometry(1.65, 1);
+    const outer = new THREE.TorusGeometry(1.55, 0.065, 12, 64);
     const inner = new THREE.OctahedronGeometry(1.05, 0);
     const sphere = new THREE.SphereGeometry(0.55, 24, 24);
     return { outerGeo: outer, innerPolyGeo: inner, sphereGeo: sphere };
@@ -38,18 +39,18 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
     const t = state.clock.elapsedTime;
 
     if (outerRef.current) {
-      outerRef.current.rotation.y = t * 0.25;
+      outerRef.current.rotation.y = t * 0.08;
       outerRef.current.rotation.x = Math.sin(t * 0.15) * 0.3;
     }
 
     if (innerPolyRef.current) {
-      innerPolyRef.current.rotation.y = -t * 0.4;
+      innerPolyRef.current.rotation.y = -t * 0.12;
       innerPolyRef.current.rotation.z = Math.cos(t * 0.2) * 0.4;
     }
 
     if (coreSphereRef.current) {
       const breath = Math.sin(t * 1.6);
-      const scale = 1.0 + breath * 0.05;
+      const scale = 0.45 + breath * 0.008;
       coreSphereRef.current.scale.set(scale, scale, scale);
     }
 
@@ -62,31 +63,31 @@ function AICore({ isReducedMotion }: { isReducedMotion: boolean }) {
   return (
     <group position={[0, 0.2, 0]}>
       <mesh ref={outerRef} geometry={outerGeo}>
-        <meshBasicMaterial
-          color={PALETTE.cyan}
-          wireframe
-          transparent
-          opacity={0.45}
-          wireframeLinewidth={1.5}
-        />
+        <meshStandardMaterial color="#9baeb8" metalness={0.88} roughness={0.24} />
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[1.55, 0.045, 10, 64]} />
+          <meshStandardMaterial color="#506976" metalness={0.8} roughness={0.3} />
+        </mesh>
       </mesh>
 
       <mesh ref={innerPolyRef} geometry={innerPolyGeo}>
-        <meshBasicMaterial
-          color={PALETTE.emerald}
-          wireframe
-          transparent
-          opacity={0.65}
-          wireframeLinewidth={1.5}
-        />
+        <meshPhysicalMaterial color="#193c49" metalness={0.65} roughness={0.2} clearcoat={1} clearcoatRoughness={0.12} />
+        <mesh scale={1.015}>
+          <octahedronGeometry args={[1.05, 0]} />
+          <meshBasicMaterial color={PALETTE.cyan} wireframe transparent opacity={0.45} />
+        </mesh>
       </mesh>
 
-      <mesh ref={coreSphereRef} geometry={sphereGeo}>
-        <meshBasicMaterial
-          color={PALETTE.cyan}
-          transparent
-          opacity={0.85}
-        />
+      <mesh ref={coreSphereRef} geometry={sphereGeo} position={[0, 0, 0.67]} scale={0.45}>
+        <meshPhysicalMaterial color="#123f4b" metalness={0.4} roughness={0.1} clearcoat={1} emissive={PALETTE.cyan} emissiveIntensity={0.45} />
+      </mesh>
+      <mesh position={[0, -1.72, 0]}>
+        <cylinderGeometry args={[1.1, 1.25, 0.16, 48]} />
+        <meshStandardMaterial color="#20343e" metalness={0.75} roughness={0.3} />
+      </mesh>
+      <mesh position={[0, -1.63, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.96, 0.015, 8, 64]} />
+        <meshBasicMaterial color={PALETTE.cyan} />
       </mesh>
 
       <pointLight ref={lightRef} color={PALETTE.cyan} intensity={2.2} distance={8} />
@@ -239,7 +240,7 @@ function WireframeGround({ segments }: { segments: number }) {
       const x = pos.getX(i);
       const z = pos.getZ(i);
       const dist = Math.sqrt(x * x + z * z);
-      pos.setY(i, -3.2 + Math.sin(dist * 0.4) * 0.15);
+      pos.setY(i, -3.2 + Math.sin(dist * 0.12) * 0.15);
     }
     return geo;
   }, [segments]);
@@ -384,7 +385,9 @@ function ConstellationScene({
     <>
       <CameraRig isReducedMotion={isReducedMotion} />
 
-      <ambientLight intensity={0.35} color={PALETTE.bg} />
+      <StudioEnvironment />
+      <ambientLight intensity={0.4} color="#dbe9ee" />
+      <directionalLight position={[-4, 6, 5]} intensity={2.5} color="#ffffff" />
       <directionalLight position={[6, 8, 6]} intensity={0.9} color={PALETTE.cyan} />
       <pointLight position={[0, -1, 0]} intensity={1.4} color={PALETTE.emerald} distance={12} />
 
@@ -399,8 +402,8 @@ function ConstellationScene({
         >
           {config.enableBloom ? (
             <Bloom
-              intensity={1.2}
-              luminanceThreshold={0.2}
+              intensity={0.65}
+              luminanceThreshold={0.85}
               luminanceSmoothing={0.85}
               mipmapBlur
             />

@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { StudioEnvironment } from '@/lib/graphics/StudioEnvironment';
 import { SceneLoop } from '@/lib/graphics/SceneLoop';
 import { useAdaptiveQuality } from '@/lib/graphics/quality';
 
@@ -153,6 +154,29 @@ function TerrainGrid({
   );
 }
 
+// Small manufactured details share one material and the assembly's visibility timeline.
+function CameraHardware({ time }: { time: React.MutableRefObject<number> }) {
+  const group = useRef<THREE.Group>(null!);
+  const material = useMemo(() => new THREE.MeshStandardMaterial({ color: '#344650', metalness: 0.8, roughness: 0.32, transparent: true }), []);
+  useEffect(() => () => material.dispose(), [material]);
+  useFrame(() => {
+    const t = time.current;
+    group.current.visible = t >= 1.3 && t < 6;
+    material.opacity = Math.min(1, Math.max(0, (t - 1.3) / 0.5)) * Math.min(1, Math.max(0, 6 - t));
+  });
+  return <group ref={group} visible={false}>
+    {[-1, 1].map(side => <mesh key={side} position={[side * 0.66, 0.18, 0.51]} rotation={[Math.PI / 2, 0, 0]} material={material}>
+      <cylinderGeometry args={[0.047, 0.047, 0.03, 6]} />
+    </mesh>)}
+    {[0, 1, 2, 3, 4].map(i => <mesh key={i} position={[-0.18 + i * 0.09, 0.6, 0.59]} material={material}>
+      <boxGeometry args={[0.025, 0.09, 0.025]} />
+    </mesh>)}
+    {[0.29, 0.32].map(radius => <mesh key={radius} position={[0, -0.05, 0.965]} material={material}>
+      <torusGeometry args={[radius, 0.012, 8, 40]} />
+    </mesh>)}
+  </group>;
+}
+
 // --- 2. PTZ Security Camera Component (Domo PTZ Industrial Premium de Alta Definición) ---
 function PTZCameraAssembly({
   accumTimeRef,
@@ -173,8 +197,8 @@ function PTZCameraAssembly({
   const podCollarMatRef = useRef<THREE.MeshBasicMaterial>(null!);
 
   const lensGroupRef = useRef<THREE.Group>(null!);
-  const bezelMatRef = useRef<THREE.MeshBasicMaterial>(null!);
-  const barrelMatRef = useRef<THREE.MeshBasicMaterial>(null!);
+  const bezelMatRef = useRef<THREE.MeshStandardMaterial>(null!);
+  const barrelMatRef = useRef<THREE.MeshStandardMaterial>(null!);
   const glassMatRef = useRef<THREE.MeshPhysicalMaterial>(null!);
   const irisDotMatRef = useRef<THREE.MeshBasicMaterial>(null!);
   const irRingMatRef = useRef<THREE.MeshBasicMaterial>(null!);
@@ -224,7 +248,9 @@ function PTZCameraAssembly({
     hingeR.rotateZ(Math.PI / 2);
     hingeR.translate(0.92, 0.55, 0);
 
-    const mountSolid = combineGeometries([cap, stem, forkRing, hingeL, hingeR]);
+    const bridge = new THREE.BoxGeometry(1.84, 0.12, 0.20);
+    bridge.translate(0, 0.55, 0);
+    const mountSolid = combineGeometries([cap, stem, bridge, forkRing, hingeL, hingeR]);
     const mountEdges = new THREE.EdgesGeometry(mountSolid, 25);
 
     // 2) Cuerpo Cápsula Esférica PTZ (Domo inferior pulido + Collar de acento en el ecuador)
@@ -252,7 +278,7 @@ function PTZCameraAssembly({
     glass.translate(0, -0.05, 0.84);
 
     // Núcleo iris láser esmeralda
-    const irisDot = new THREE.SphereGeometry(0.09, 16, 16);
+    const irisDot = new THREE.SphereGeometry(0.075, 16, 12);
     irisDot.translate(0, -0.05, 0.94);
 
     // Anillo de 8 LEDs Infrarrojos en la periferia del lente
@@ -319,18 +345,21 @@ function PTZCameraAssembly({
 
   function combineGeometries(geos: THREE.BufferGeometry[]): THREE.BufferGeometry {
     const verts: number[] = [];
+    const normals: number[] = [];
     geos.forEach((g) => {
       const flat = g.index ? g.toNonIndexed() : g;
       const pos = flat.attributes.position;
+      const normal = flat.attributes.normal;
       for (let i = 0; i < pos.count; i++) {
         verts.push(pos.getX(i), pos.getY(i), pos.getZ(i));
+        normals.push(normal.getX(i), normal.getY(i), normal.getZ(i));
       }
       if (flat !== g) flat.dispose();
       g.dispose();
     });
     const combined = new THREE.BufferGeometry();
     combined.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-    combined.computeVertexNormals();
+    combined.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
     return combined;
   }
 
@@ -358,10 +387,10 @@ function PTZCameraAssembly({
       mountGroupRef.current.position.y = 0.8 * (1.0 - easeMount);
     }
     if (mountMatRef.current) {
-      mountMatRef.current.opacity = easeMount * 0.9 * fadeOut;
+      mountMatRef.current.opacity = easeMount * fadeOut;
     }
     if (mountWireMatRef.current) {
-      mountWireMatRef.current.opacity = easeMount * 0.8 * fadeOut;
+      mountWireMatRef.current.opacity = easeMount * 0.12 * fadeOut;
     }
 
     const pPod = Math.max(0, Math.min(1.0, (elapsed - 0.6) / 0.8));
@@ -371,10 +400,10 @@ function PTZCameraAssembly({
       podGroupRef.current.position.y = -0.65 * (1 - easePod);
     }
     if (podSolidMatRef.current) {
-      podSolidMatRef.current.opacity = easePod * 0.95 * fadeOut;
+      podSolidMatRef.current.opacity = easePod * fadeOut;
     }
     if (podWireMatRef.current) {
-      podWireMatRef.current.opacity = easePod * 0.6 * fadeOut;
+      podWireMatRef.current.opacity = easePod * 0.08 * fadeOut;
     }
     if (podCollarMatRef.current) {
       podCollarMatRef.current.opacity = easePod * 0.9 * fadeOut;
@@ -417,7 +446,7 @@ function PTZCameraAssembly({
     if (elapsed >= 2.2 && elapsed < 2.5) {
       const tTilt = (elapsed - 2.2) / 0.3;
       tiltAngle = 0.16 + 0.34 * (1.0 - Math.cos(tTilt * Math.PI * 0.5));
-    } else if (elapsed >= 2.5 && elapsed <= 5.0) {
+    } else if (elapsed >= 2.5) {
       const progress = Math.min(1, (elapsed - 2.5) / 2.1);
       const eased = progress * progress * (3 - 2 * progress);
       panAngle = Math.sin(eased * Math.PI * 2) * 0.55;
@@ -459,7 +488,7 @@ function PTZCameraAssembly({
       {/* 1) Montura Superior e Horquilla Industrial */}
       <group ref={mountGroupRef}>
         <mesh geometry={mountSolidGeo}>
-          <meshStandardMaterial ref={mountMatRef} color="#415765" roughness={0.48} metalness={0.65} transparent opacity={0} side={THREE.DoubleSide} />
+          <meshStandardMaterial ref={mountMatRef} color="#85969f" roughness={0.42} metalness={0.25} transparent opacity={0} side={THREE.DoubleSide} />
         </mesh>
         <lineSegments geometry={mountEdgesGeo}>
           <lineBasicMaterial ref={mountWireMatRef} color={PALETTE.emerald} transparent opacity={0} linewidth={1.5} />
@@ -471,7 +500,7 @@ function PTZCameraAssembly({
         <group ref={podGroupRef}>
           {/* Cuerpo sólido interior oscuro */}
           <mesh geometry={podSolidGeo}>
-            <meshStandardMaterial ref={podSolidMatRef} color="#415765" roughness={0.48} metalness={0.65} transparent opacity={0} side={THREE.DoubleSide} />
+            <meshStandardMaterial ref={podSolidMatRef} color="#85969f" roughness={0.42} metalness={0.25} transparent opacity={0} side={THREE.DoubleSide} />
           </mesh>
           {/* Collar de acento esmeralda en el ecuador */}
           <mesh geometry={podCollarGeo}>
@@ -485,20 +514,21 @@ function PTZCameraAssembly({
 
         {/* 3) UNIDAD LENTE ÓPTICO AI COMPLETAMENTE FRONTAL Y CRISTALINA */}
         <group ref={lensGroupRef}>
+          <CameraHardware time={accumTimeRef} />
           <mesh geometry={bezelGeo}>
-            <meshBasicMaterial ref={bezelMatRef} color={PALETTE.emerald} transparent opacity={0} />
+            <meshStandardMaterial ref={bezelMatRef} color="#263840" metalness={0.85} roughness={0.25} transparent opacity={0} />
           </mesh>
           <mesh geometry={barrelGeo}>
-            <meshBasicMaterial ref={barrelMatRef} color={PALETTE.cyan} wireframe transparent opacity={0} />
+            <meshStandardMaterial ref={barrelMatRef} color="#101c23" metalness={0.6} roughness={0.28} transparent opacity={0} />
           </mesh>
           <mesh geometry={glassGeo}>
-            <meshPhysicalMaterial ref={glassMatRef} color="#163b4a" roughness={0.12} metalness={0.3} clearcoat={1} emissive={PALETTE.cyan} emissiveIntensity={0.12} transparent opacity={0} side={THREE.DoubleSide} />
+            <meshPhysicalMaterial ref={glassMatRef} color="#08212f" roughness={0.06} metalness={0.5} clearcoat={1} clearcoatRoughness={0.03} transparent opacity={0} side={THREE.DoubleSide} />
           </mesh>
           <mesh geometry={irisDotGeo}>
-            <meshBasicMaterial ref={irisDotMatRef} color={PALETTE.emerald} transparent opacity={0} />
+            <meshBasicMaterial ref={irisDotMatRef} color="#01080d" transparent opacity={0} />
           </mesh>
           <mesh geometry={irRingGeo}>
-            <meshBasicMaterial ref={irRingMatRef} color={PALETTE.cyan} transparent opacity={0} />
+            <meshBasicMaterial ref={irRingMatRef} color="#9cc1ca" transparent opacity={0} />
           </mesh>
 
           <mesh geometry={ledGeo}>
@@ -1081,9 +1111,10 @@ function RadarSceneContent({
         hudStatusRef={hudStatusRef}
       />
 
-      <ambientLight intensity={0.9} color="#d7e8f0" />
-      <directionalLight position={[-3, 4, 5]} intensity={3} color="#e6f2ff" />
-      <directionalLight position={[5, 10, 5]} intensity={0.8} color={PALETTE.emerald} />
+      <StudioEnvironment />
+      <ambientLight intensity={0.55} color="#d7e8f0" />
+      <directionalLight position={[-3, 4, 5]} intensity={1.5} color="#e6f2ff" />
+      <directionalLight position={[4, 3, -4]} intensity={2} color="#b9dfff" />
       <pointLight position={[0, 4, 0]} intensity={1.5} color={PALETTE.cyan} distance={15} />
 
       <PTZCameraAssembly accumTimeRef={accumTimeRef} isReducedMotion={isReducedMotion} />
@@ -1107,8 +1138,8 @@ function RadarSceneContent({
           enableNormalPass={false}
         >
           <Bloom
-            intensity={1.1}
-            luminanceThreshold={0.25}
+            intensity={0.4}
+            luminanceThreshold={1.1}
             luminanceSmoothing={0.85}
             mipmapBlur
           />
