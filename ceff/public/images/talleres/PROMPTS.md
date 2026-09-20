@@ -1,0 +1,30 @@
+# Imágenes de talleres
+
+Generadas con la herramienta integrada de generación de imágenes (20 de septiembre de 2026). Personas ficticias; escenas ilustrativas.
+
+## concierto.png
+
+Use case: photorealistic-natural. Generate ONE landscape editorial photograph for a Mexican school website activity card. Entirely fictional AI-generated children aged 8–12, natural candid expressions, realistic anatomy, tasteful natural daylight, consistent warm school photography. STRICT UNIFORM: boys white SHORT-SLEEVE button-up shirts tucked into navy blue trousers, black formal dress shoes; girls white SHORT-SLEEVE button-up shirts tucked into navy blue knee-length skirts, opaque navy blue tights, black formal dress shoes. No ties, no jackets, no other uniforms. No text, watermarks or logos. Frame faces and the activity in central upper two thirds with room below for website title overlay. Three children performing a school talent concert on a modest stage, girl singing into a microphone, boy playing acoustic guitar and another child playing keyboard, joyful authentic school recital. Landscape 3:2, medium-wide view.
+
+## robotica.png
+
+Use case: photorealistic-natural. Generate ONE landscape editorial photograph for a Mexican school website activity card. Entirely fictional AI-generated children aged 8–12, natural candid expressions, realistic anatomy, tasteful natural daylight, consistent warm school photography. STRICT UNIFORM: boys white SHORT-SLEEVE button-up shirts tucked into navy blue trousers, black formal dress shoes; girls white SHORT-SLEEVE button-up shirts tucked into navy blue knee-length skirts, opaque navy blue tights, black formal dress shoes. No ties, no jackets, no other uniforms. No text, watermarks or logos. Frame faces and the activity in central upper two thirds with room below for website title overlay. One boy and one girl collaborating at a classroom table building a colorful interlocking-brick educational robot with wheels and sensors, both looking at the robot, hands naturally assembling pieces. Landscape 3:2.
+
+## festejos.png
+
+Use case: photorealistic-natural. Generate ONE landscape editorial photograph for a Mexican school website activity card. Entirely fictional AI-generated children aged 8–12, natural candid expressions, realistic anatomy, tasteful natural daylight, consistent warm school photography. STRICT UNIFORM: boys white SHORT-SLEEVE button-up shirts tucked into navy blue trousers, black formal dress shoes; girls white SHORT-SLEEVE button-up shirts tucked into navy blue knee-length skirts, opaque navy blue tights, black formal dress shoes. No ties, no jackets, no other uniforms. No text, watermarks or logos. Frame faces and the activity in central upper two thirds with room below for website title overlay. Three children celebrating Mexican independence festivities in a school courtyard, holding small Mexican flags with green white and red vertical stripes, festive papel picado overhead, happy candid moment. Landscape 3:2.
+
+## deportes.png
+
+Use case: photorealistic-natural. Generate ONE landscape editorial photograph for a Mexican school website activity card. Entirely fictional AI-generated children aged 8–12, natural candid expressions, realistic anatomy, tasteful natural daylight, consistent warm school photography. STRICT UNIFORM: boys white SHORT-SLEEVE button-up shirts tucked into navy blue trousers, black formal dress shoes; girls white SHORT-SLEEVE button-up shirts tucked into navy blue knee-length skirts, opaque navy blue tights, black formal dress shoes. No ties, no jackets, no other uniforms. No text, watermarks or logos. Frame faces and the activity in central upper two thirds with room below for website title overlay. Two boys and one girl practicing gentle football ball control in a school courtyard, a football on the ground, standing and lightly passing it, full uniform and black dress shoes as specified, relaxed school activity without athletic kits. Landscape 3:2.
+
+## graduaciones.png
+
+Use case: photorealistic-natural. Generate ONE landscape editorial photograph for a Mexican school website activity card. Entirely fictional AI-generated children aged 8–12, natural candid expressions, realistic anatomy, tasteful natural daylight, consistent warm school photography. STRICT UNIFORM: boys white SHORT-SLEEVE button-up shirts tucked into navy blue trousers, black formal dress shoes; girls white SHORT-SLEEVE button-up shirts tucked into navy blue knee-length skirts, opaque navy blue tights, black formal dress shoes. No ties, no jackets, no other uniforms. No text, watermarks or logos. Frame faces and the activity in central upper two thirds with room below for website title overlay. Three children proudly celebrating primary school graduation, holding rolled cream diplomas tied with navy ribbons, simple navy and gold balloons in background, wearing exactly the specified school uniforms, no gowns or caps covering their clothes. Landscape 3:2.
+
+## arte.png
+
+Use case: photorealistic-natural. Generate ONE landscape editorial photograph for a Mexican school website activity card. Entirely fictional AI-generated children aged 8–12, natural candid expressions, realistic anatomy, tasteful natural daylight, consistent warm school photography. STRICT UNIFORM: boys white SHORT-SLEEVE button-up shirts tucked into navy blue trousers, black formal dress shoes; girls white SHORT-SLEEVE button-up shirts tucked into navy blue knee-length skirts, opaque navy blue tights, black formal dress shoes. No ties, no jackets, no other uniforms. No text, watermarks or logos. Frame faces and the activity in central upper two thirds with room below for website title overlay. A boy and two girls painting colorful pictures with brushes at an art classroom table, watercolor trays and paper, creative concentration, white short sleeve shirts and navy school uniform, no aprons. Wide landscape 3:2 composition with children close together so faces remain visible in wide card crop.
+
+La escena de festejos se corrigió para usar medias azul marino completas, sin rodillas descubiertas.
+

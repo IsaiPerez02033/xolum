@@ -2,19 +2,17 @@
 
 import { MusicNotes, Robot, Flag, Medal, GraduationCap, Palette } from "@phosphor-icons/react";
 import Reveal from "./Reveal";
+import Image from "next/image";
 
-/*
-  Cada "momento" muestra un mosaico de color de marca por defecto.
-  Para usar una foto real de la escuela: coloca la imagen en /public
-  (por ejemplo /public/vida-1.jpg) y agrega  img: "/vida-1.jpg"  al objeto.
-*/
+// Escenas ilustrativas generadas con IA; no son fotografías de alumnos reales.
 type Momento = {
   Icon: typeof MusicNotes;
   label: string;
   sub: string;
-  bg: string;
+  alt: string;
   span?: string;
-  img?: string;
+  img: string;
+  position?: string;
 };
 
 const MOMENTOS: Momento[] = [
@@ -22,39 +20,46 @@ const MOMENTOS: Momento[] = [
     Icon: MusicNotes,
     label: "Concierto de talento",
     sub: "Pop Talent Concert",
-    bg: "linear-gradient(135deg, #1b3aa5, #3b6fe0)",
+    img: "/images/talleres/concierto.png",
+    alt: "Niños con uniforme escolar cantando y tocando instrumentos en un concierto, imagen generada con IA.",
     span: "sm:col-span-2 sm:row-span-2",
   },
   {
     Icon: Robot,
     label: "Robótica Lego",
     sub: "Ciencia y tecnología",
-    bg: "linear-gradient(135deg, #d9a406, #f5c518)",
+    img: "/images/talleres/robotica.png",
+    alt: "Niños construyendo un robot de piezas en el aula, imagen generada con IA.",
   },
   {
     Icon: Flag,
     label: "Festejos patrios",
     sub: "Identidad y cultura",
-    bg: "linear-gradient(135deg, #112567, #1b3aa5)",
+    img: "/images/talleres/festejos.png",
+    alt: "Niños celebrando con banderas mexicanas en el patio escolar, imagen generada con IA.",
   },
   {
     Icon: Medal,
     label: "Deportes",
     sub: "Salud y disciplina",
-    bg: "linear-gradient(135deg, #3b6fe0, #1b3aa5)",
+    img: "/images/talleres/deportes.png",
+    alt: "Niños practicando fútbol con uniforme escolar, imagen generada con IA.",
   },
   {
     Icon: GraduationCap,
     label: "Graduaciones",
     sub: "Logros que se celebran",
-    bg: "linear-gradient(135deg, #1b3aa5, #112567)",
+    img: "/images/talleres/graduaciones.png",
+    alt: "Niños celebrando su graduación con diplomas, imagen generada con IA.",
   },
   {
     Icon: Palette,
     label: "Arte y creatividad",
     span: "sm:col-span-2",
     sub: "Expresión y talento",
-    bg: "linear-gradient(135deg, #f5c518, #d9a406)",
+    img: "/images/talleres/arte.png",
+    alt: "Niños pintando en una clase de arte, imagen generada con IA.",
+    position: "center 35%",
   },
 ];
 
@@ -85,31 +90,19 @@ export default function TalleresSection() {
                 className={`workshop-card group relative overflow-hidden rounded-3xl card-shadow transition-transform duration-300  ${
                   m.span ?? ""
                 }`}
-                style={m.img ? undefined : { background: m.bg }}
               >
-                {m.img && (
-                  <img
-                    src={m.img}
-                    alt={m.label}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                )}
-                {m.img && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-blue-dark/80 via-blue-dark/20 to-transparent" />
-                )}
-
-                {/* Textura */}
-                <div
-                  className="absolute inset-0 opacity-[0.14]"
-                  style={{
-                    backgroundImage:
-                      "radial-gradient(#fff 1.2px, transparent 1.2px)",
-                    backgroundSize: "22px 22px",
-                  }}
+                <Image
+                  src={m.img}
+                  alt={m.alt}
+                  fill
+                  sizes={m.span ? "(max-width: 379px) calc(100vw - 48px), (max-width: 639px) calc((100vw - 64px) / 2), (max-width: 1280px) 50vw, 608px" : "(max-width: 379px) calc(100vw - 48px), (max-width: 639px) calc((100vw - 64px) / 2), (max-width: 1280px) 25vw, 296px"}
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  style={{ objectPosition: m.position ?? "center" }}
                 />
+                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-blue-dark/95 via-blue-dark/15 to-black/15" />
 
                 <div className="relative z-10 flex h-full flex-col justify-between p-5">
-                  <Icon className="h-8 w-8 text-white/90 drop-shadow" />
+                  <Icon aria-hidden="true" className="h-8 w-8 rounded-lg bg-blue-dark/45 p-1 text-white drop-shadow" />
                   <div>
                     <p className="font-display text-lg font-extrabold leading-tight text-white drop-shadow">
                       {m.label}
@@ -123,6 +116,8 @@ export default function TalleresSection() {
             );
           })}
         </Reveal>
+
+        <p className="mt-4 text-center text-xs text-muted">Imágenes ilustrativas generadas con IA.</p>
 
         <Reveal className="mt-10 flex flex-wrap items-center justify-center gap-2.5" delay={0.1}>
           {[

@@ -43,11 +43,12 @@ npm run build    # build de producción
 - `public/logo.png` — escudo oficial (fondo amarillo), usado en las insignias circulares.
 - `public/logo-banner.png` — escudo con banda "Preescolar · Primaria · Secundaria".
 
-## Fotos reales de la escuela (opcional)
+## Imágenes de talleres
 
-La sección **Talleres y vida escolar** usa mosaicos de color por defecto.
-Para usar fotos reales: coloca la imagen en `public/` (ej. `public/vida-1.jpg`) y
-agrega `img: "/vida-1.jpg"` al objeto correspondiente en
+Las seis tarjetas usan escenas ilustrativas generadas con IA, guardadas en
+`public/images/talleres/`. Los prompts están documentados en `PROMPTS.md`
+dentro de esa carpeta. Las imágenes se sirven con `next/image` y carga diferida.
+Para sustituirlas, actualiza `img`, `alt` y, si hace falta, `position` en
 `src/components/TalleresSection.tsx`.
 
 ## Datos usados

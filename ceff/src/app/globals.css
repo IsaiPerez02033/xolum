@@ -252,8 +252,6 @@ section[id], main[id] { scroll-margin-top: 100px; }
 .level-card > p:nth-of-type(1) { color: #886500; }
 .feature-card { border-color: #e0e5ef; }
 .promo-card { background: rgb(255 255 255 / 7%); }
-.workshop-card:nth-child(2), .workshop-card:nth-child(6) { color: var(--blue-dark); }
-.workshop-card:nth-child(2) :is(p, svg), .workshop-card:nth-child(6) :is(p, svg) { color: var(--blue-dark); filter: none; }
 .workshop-card p + p { margin-top: 6px; line-height: 1.5; }
 .level-link { min-height: 48px; text-underline-offset: 5px; }
 .level-link:focus-visible { text-decoration: underline; }
