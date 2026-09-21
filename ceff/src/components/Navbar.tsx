@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import { useState, useEffect } from "react";
 import { List, X, Phone } from "@phosphor-icons/react";
@@ -79,7 +80,7 @@ export default function Navbar() {
         {/* Logo */}
         <a href="#inicio" className="flex items-center gap-2.5 pl-1 pr-2 group">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full overflow-hidden ring-2 ring-gold/70 bg-gold shadow-sm transition-transform duration-300 group-hover:scale-105">
-            <img
+            <Image width={80} height={80}
               src="/logo.png"
               alt="Escudo CEFF"
               className="h-full w-full object-contain"
@@ -112,7 +113,7 @@ export default function Navbar() {
           className="school-button school-button-gold hidden md:inline-flex items-center gap-1.5 rounded-full bg-gold px-4 py-2 text-[11px] font-extrabold uppercase tracking-wider text-blue-dark hover:bg-gold-dark hover:text-white transition-all duration-300 shadow-md shadow-gold/40 hover:scale-105"
         >
           <Phone weight="fill" className="h-3.5 w-3.5" />
-          Inscríbete
+          Informes
         </a>
 
         {/* Mobile toggle */}

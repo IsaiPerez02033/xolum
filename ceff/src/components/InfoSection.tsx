@@ -21,9 +21,6 @@ export default function InfoSection() {
     <section id="contacto" className="relative bg-surface py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="inline-block rounded-full bg-blue/8 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-blue">
-            Visítanos
-          </span>
           <h2 className="mt-5 font-display text-3xl font-extrabold tracking-tight text-blue-dark sm:text-5xl">
             Estamos para{" "}
             <span className="text-gradient-blue">recibirte</span>
@@ -49,7 +46,7 @@ export default function InfoSection() {
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground/90">
                       {SITE.address}
-                    </p>
+                    </p><a href={waLink("Hola, voy a visitar el colegio. ¿Podrían confirmar la dirección y compartir el punto exacto de entrada en Google Maps?")} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-11 items-center text-sm font-bold text-blue underline underline-offset-4">Confirmar ubicación antes de salir</a>
                   </div>
                 </li>
 
@@ -62,9 +59,7 @@ export default function InfoSection() {
                       Teléfonos
                     </p>
                     {SITE.phones.map((p) => (
-                      <p key={p} className="mt-1 text-sm font-semibold text-foreground/90">
-                        {p}
-                      </p>
+                      <a key={p} href={`tel:+52${p.replace(/\D/g, "")}`} className="block min-h-11 py-2 text-sm font-semibold text-blue underline underline-offset-4">{p}</a>
                     ))}
                   </div>
                 </li>
@@ -95,7 +90,7 @@ export default function InfoSection() {
                       Atención
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground/90">
-                      Lunes a Viernes · Informes todo el día por WhatsApp
+                      Consulta por WhatsApp los horarios de atención y acuerda tu visita.
                     </p>
                   </div>
                 </li>
@@ -136,7 +131,7 @@ export default function InfoSection() {
                   Agenda una visita
                 </p>
                 <p className="text-sm text-white/75">
-                  Escríbenos por WhatsApp y te atendemos al momento.
+                  Acuerda el día y la hora por WhatsApp.
                 </p>
               </div>
               <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gold text-blue-dark transition-transform duration-300 group-hover:scale-110">

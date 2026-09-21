@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
+import FaqSection from "@/components/FaqSection";
 import Hero from "@/components/Hero";
 import NosotrosSequence from "@/components/NosotrosSequence";
 import NivelesSection from "@/components/NivelesSection";
@@ -17,6 +19,7 @@ const FOOTER_LINKS = [
   { id: "talleres", label: "Talleres" },
   { id: "admisiones", label: "Admisiones" },
   { id: "contacto", label: "Contacto" },
+  { id: "preguntas", label: "Preguntas frecuentes" },
 ];
 
 export default function Home() {
@@ -31,6 +34,7 @@ export default function Home() {
       <OfertaSection />
       <TalleresSection />
       <AdmisionesSection />
+      <FaqSection />
       <InfoSection />
       </main>
       <FloatingWhatsApp />
@@ -44,7 +48,7 @@ export default function Home() {
             <div className="max-w-sm">
               <div className="flex items-center justify-center gap-3 lg:justify-start">
                 <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gold ring-2 ring-white/30">
-                  <img src="/logo.png" alt="Escudo CEFF" className="h-full w-full object-contain p-0.5" />
+                  <Image width={80} height={80} src="/logo.png" alt="Escudo CEFF" className="h-full w-full object-contain p-0.5" />
                 </span>
                 <div className="leading-tight">
                   <p className="font-display text-base font-extrabold">
@@ -87,7 +91,7 @@ export default function Home() {
               </p>
               <p className="mt-4 text-sm text-white/75">{SITE.address}</p>
               <p className="mt-2 text-sm text-white/75">
-                {SITE.phones.join(" · ")}
+                {SITE.phones.map(phone => <a key={phone} className="block min-h-11 py-2 hover:underline" href={`tel:+52${phone.replace(/\D/g, "")}`}>{phone}</a>)}
               </p>
               <a
                 href={`mailto:${SITE.email}`}

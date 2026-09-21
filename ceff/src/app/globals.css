@@ -11,7 +11,7 @@
   --blue-dark: #112567;       /* Azul marino profundo */
   --blue-light: #3b6fe0;      /* Azul brillante */
   --gold: #f5c518;            /* Amarillo dorado (fondo escudo) */
-  --gold-dark: #d9a406;       /* Dorado profundo */
+  --gold-dark: #886500;       /* Dorado profundo */
   --gold-soft: #fde68a;       /* Dorado claro */
   --silver: #c9d2e0;          /* Plata (marco del escudo) */
 }
@@ -77,20 +77,8 @@ body {
   background: var(--blue-dark);
 }
 
-/* Gradientes de texto */
-.text-gradient-blue {
-  background: linear-gradient(120deg, var(--blue-light) 0%, var(--blue) 45%, var(--blue-dark) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-gold {
-  background: linear-gradient(120deg, #fbe07a 0%, var(--gold) 45%, var(--gold-dark) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+.text-gradient-blue { color: var(--blue); }
+.text-gradient-gold { color: var(--gold); }
 
 /* Patrón de puntos decorativo */
 .dot-grid {
@@ -293,3 +281,17 @@ section[id], main[id] { scroll-margin-top: 100px; }
 @media (prefers-reduced-motion: reduce) {
   .school-button:hover, .school-button:active, .floating-whatsapp { translate: none; }
 }
+
+/* Quiet surfaces let the school, activities and information lead. */
+::selection { background: var(--gold-soft); color: var(--blue-dark); }
+h1, h2, h3 { text-wrap: balance; }
+#nosotros { background: var(--blue-dark); }
+#niveles, #contacto { background: white; }
+#talleres { background: var(--cream); }
+.level-card { border-top-width: 1px; }
+.level-card:first-child, .level-card:last-child { border-top-color: var(--silver); }
+.level-card, .feature-card, .promo-card, .workshop-card, .visit-card { border-radius: 16px; box-shadow: none; }
+.feature-card { border: 0; border-radius: 0; border-top: 1px solid var(--silver); background: transparent; padding-left: 0; padding-right: 0; }
+.faq-item summary::marker { color: var(--blue); }
+.faq-item[open] summary { color: var(--blue); }
+.faq-item summary:hover { text-decoration: underline; text-underline-offset: 5px; }

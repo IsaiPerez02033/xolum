@@ -2,7 +2,7 @@
 
 import { Baby, BookOpen, Compass, CheckCircle, ArrowRight } from "@phosphor-icons/react";
 import Reveal from "./Reveal";
-import { waLink, WA_MESSAGES } from "@/lib/site";
+import { waLink } from "@/lib/site";
 
 const NIVELES = [
   {
@@ -57,9 +57,6 @@ export default function NivelesSection() {
     <section id="niveles" className="relative bg-white py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="inline-block rounded-full bg-blue/8 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-blue">
-            Niveles educativos
-          </span>
           <h2 className="mt-5 font-display text-3xl font-extrabold tracking-tight text-blue-dark sm:text-5xl">
             Un camino completo,{" "}
             <span className="text-gradient-blue">de kinder a secundaria</span>
@@ -102,7 +99,7 @@ export default function NivelesSection() {
                   ))}
                 </ul>
                 <a
-                  href={waLink(WA_MESSAGES.informes)}
+                  href={waLink(`Hola, me interesa ${nivel.name} en el Centro Educativo Federico Froebel. ¿Pueden compartir horarios, cupo por grado, costos, requisitos y actividades incluidas?`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="level-link mt-auto pt-8 inline-flex items-center gap-1.5 text-sm font-extrabold uppercase tracking-wide text-blue transition-colors hover:text-blue-dark"

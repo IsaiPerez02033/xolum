@@ -37,3 +37,5 @@ export const WA_MESSAGES = {
   becas:
     "Hola, quiero información sobre las becas y descuentos de inscripción del Centro Educativo Federico Froebel.",
 };
+
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://ceff-pi.vercel.app").replace(/\/$/, "");

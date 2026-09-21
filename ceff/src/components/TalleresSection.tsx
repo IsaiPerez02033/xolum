@@ -68,9 +68,6 @@ export default function TalleresSection() {
     <section id="talleres" className="relative bg-white py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="inline-block rounded-full bg-blue/8 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-blue">
-            Talleres y vida escolar
-          </span>
           <h2 className="mt-5 font-display text-3xl font-extrabold tracking-tight text-blue-dark sm:text-5xl">
             Aprender también es{" "}
             <span className="text-gradient-blue">vivir experiencias</span>

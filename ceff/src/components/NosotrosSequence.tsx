@@ -49,7 +49,7 @@ export default function NosotrosSequence() {
     <section id="nosotros" className="bg-blue-dark py-20 text-white sm:py-24">
       <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[0.85fr_1.3fr] lg:gap-20">
         <Reveal>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Nuestra esencia</p>
+
           <h2 className="mt-5 font-display text-3xl font-extrabold leading-tight sm:text-5xl">Una comunidad que acompaña su crecimiento.</h2>
           <p className="mt-6 max-w-sm text-base leading-relaxed text-white/75">Amor, disciplina y excelencia académica en cada etapa de su formación.</p>
         </Reveal>

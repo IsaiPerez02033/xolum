@@ -1,7 +1,8 @@
 "use client";
 
-import { Student, Buildings, SealPercent, MegaphoneSimple, ArrowRight } from "@phosphor-icons/react";
+import { Student, Buildings, SealPercent, ArrowRight } from "@phosphor-icons/react";
 import Reveal from "./Reveal";
+import AdmissionsGuide from "./AdmissionsGuide";
 import { waLink, WA_MESSAGES } from "@/lib/site";
 
 const PROMOS = [
@@ -9,7 +10,7 @@ const PROMOS = [
     Icon: Student,
     tag: "Si vienes de escuela pública",
     highlight: "Inscripción GRATIS",
-    desc: "Cámbiate a Federico Froebel sin pagar inscripción y mejora tu nivel académico.",
+    desc: "Conoce el apoyo de inscripción para familias que llegan de una escuela pública.",
   },
   {
     Icon: Buildings,
@@ -36,27 +37,13 @@ export default function AdmisionesSection() {
     <section
       id="admisiones"
       className="relative overflow-hidden py-24 sm:py-32"
-      style={{ background: "linear-gradient(160deg, #112567 0%, #1b3aa5 60%, #12277a 100%)" }}
+      style={{ background: "var(--blue-dark)" }}
     >
-      {/* Fondo decorativo */}
-      <div
-        className="absolute inset-0 opacity-[0.10]"
-        style={{
-          backgroundImage: "radial-gradient(#fff 1.3px, transparent 1.3px)",
-          backgroundSize: "28px 28px",
-        }}
-      />
-      <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-gold/25 blur-3xl" />
-
       <div className="relative z-10 mx-auto max-w-7xl px-6">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.2em] text-blue-dark">
-            <MegaphoneSimple weight="fill" className="h-4 w-4" />
-            Inscripciones abiertas
-          </span>
+        <AdmissionsGuide />
+        <Reveal className="max-w-2xl">
           <h2 className="mt-5 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
-            Tu lugar en Federico Froebel{" "}
-            <span className="text-gradient-gold">te está esperando</span>
+            Becas y apoyos para tu familia
           </h2>
           <p className="mt-4 text-base text-white/80 sm:text-lg">
             Contamos con promociones y becas para que más familias sean parte de
@@ -124,8 +111,7 @@ export default function AdmisionesSection() {
 
           <div className="mt-8 flex flex-col items-center gap-3 border-t border-white/15 pt-8 sm:flex-row sm:justify-between">
             <p className="text-sm text-white/70">
-              *Promociones y becas sujetas a los términos del ciclo escolar
-              vigente.
+              Confirma con el colegio el ciclo, vigencia, requisitos, conceptos incluidos y compatibilidad de cada beneficio antes de inscribirte.
             </p>
             <a
               href={waLink(WA_MESSAGES.becas)}
@@ -133,7 +119,7 @@ export default function AdmisionesSection() {
               rel="noopener noreferrer"
               className="school-button school-button-gold group inline-flex items-center gap-2 rounded-full bg-gold px-7 py-3.5 text-sm font-extrabold uppercase tracking-wide text-blue-dark shadow-lg shadow-black/20 transition-all duration-300 hover:bg-white hover:scale-105"
             >
-              Quiero mi beca
+              Consultar condiciones
               <ArrowRight weight="bold" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </a>
           </div>

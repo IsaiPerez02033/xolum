@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SITE, SITE_URL } from "@/lib/site";
 import { Archivo, Fraunces, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import IconProvider from "@/components/IconProvider";
@@ -29,12 +30,11 @@ const hanken = Hanken_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-  ),
+  metadataBase: new URL(SITE_URL),
   title: "Centro Educativo Federico Froebel | Preescolar, Primaria y Secundaria en Teoloyucan",
   description:
-    "Educamos con amor, disciplina y excelente nivel académico. Preescolar, Primaria y Secundaria en Teoloyucan con Robótica Lego, Certificaciones Cambridge, deportes y actividades culturales. ¡Inscripciones abiertas con becas hasta 50%!",
+    "Educamos con amor, disciplina y excelente nivel académico. Preescolar, Primaria y Secundaria en Teoloyucan con Robótica Lego, Certificaciones Cambridge, deportes y actividades culturales. Conoce los niveles y agenda una visita.",
+  alternates: { canonical: "/" },
   keywords: [
     "escuela Teoloyucan",
     "primaria Teoloyucan",
@@ -67,6 +67,13 @@ export default function RootLayout({
       className={`${archivo.variable} ${fraunces.variable} ${hanken.variable}`}
     >
       <body className="antialiased bg-background text-foreground">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org", "@type": "School", name: SITE.name,
+          url: SITE_URL, logo: `${SITE_URL}/logo.png`, image: `${SITE_URL}/fachada.jpg`,
+          email: SITE.email, telephone: SITE.phones.map(phone => `+52${phone.replace(/\D/g, "")}`),
+          sameAs: [SITE.instagram, SITE.facebook],
+          address: { "@type": "PostalAddress", addressLocality: "Teoloyucan", addressRegion: "Estado de México", addressCountry: "MX" }
+        }).replace(/</g, "\\u003c") }} />
         <IconProvider>{children}</IconProvider>
       </body>
     </html>

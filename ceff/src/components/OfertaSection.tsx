@@ -45,12 +45,8 @@ const OFERTA = [
 export default function OfertaSection() {
   return (
     <section id="oferta" className="relative overflow-hidden bg-surface py-24 sm:py-32">
-      <div className="absolute -top-20 right-0 h-72 w-72 rounded-full bg-gold/15 blur-3xl" />
       <div className="mx-auto max-w-7xl px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="inline-block rounded-full bg-gold/20 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-gold-dark">
-            Oferta educativa
-          </span>
           <h2 className="mt-5 font-display text-3xl font-extrabold tracking-tight text-blue-dark sm:text-5xl">
             Mucho más que{" "}
             <span className="text-gradient-gold">un salón de clases</span>
