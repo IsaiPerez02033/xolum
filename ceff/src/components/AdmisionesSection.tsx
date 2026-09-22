@@ -91,19 +91,21 @@ export default function AdmisionesSection() {
                 se otorga según el promedio del último ciclo escolar cursado.
               </p>
             </div>
-            <div className="grid flex-1 grid-cols-3 gap-3 sm:max-w-md">
+            <div className="grid w-full min-w-0 flex-1 grid-cols-1 gap-3 sm:max-w-md sm:grid-cols-3">
               {BECAS.map((b) => (
                 <div
                   key={b.prom}
-                  className="rounded-2xl bg-white/95 p-4 text-center card-shadow"
+                  className="scholarship-option flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-white/95 p-4 text-left sm:block sm:text-center"
                 >
-                  <p className="font-display text-3xl font-extrabold text-blue-dark">
+                  <p className="shrink-0 whitespace-nowrap font-display text-3xl font-extrabold text-blue-dark">
                     {b.pct}
                   </p>
+                  <div className="min-w-0">
                   <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-gold-dark">
                     Promedio
                   </p>
-                  <p className="text-sm font-bold text-muted">{b.prom}</p>
+                  <p className="whitespace-nowrap text-sm font-bold text-muted">{b.prom}</p>
+                  </div>
                 </div>
               ))}
             </div>
