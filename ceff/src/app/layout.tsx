@@ -69,7 +69,7 @@ export default function RootLayout({
       <body className="antialiased bg-background text-foreground">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org", "@type": "School", name: SITE.name,
-          url: SITE_URL, logo: `${SITE_URL}/logo.png`, image: `${SITE_URL}/fachada.jpg`,
+          url: SITE_URL, logo: `${SITE_URL}/escudo-blanco.jpg`, image: `${SITE_URL}/fachada.jpg`,
           email: SITE.email, telephone: SITE.phones.map(phone => `+52${phone.replace(/\D/g, "")}`),
           sameAs: [SITE.instagram, SITE.facebook],
           address: { "@type": "PostalAddress", addressLocality: "Teoloyucan", addressRegion: "Estado de México", addressCountry: "MX" }

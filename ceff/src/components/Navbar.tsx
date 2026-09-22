@@ -79,9 +79,9 @@ export default function Navbar() {
       >
         {/* Logo */}
         <a href="#inicio" className="flex items-center gap-2.5 pl-1 pr-2 group">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full overflow-hidden ring-2 ring-gold/70 bg-gold shadow-sm transition-transform duration-300 group-hover:scale-105">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden ring-1 ring-silver/60 bg-white shadow-sm transition-transform duration-300 group-hover:scale-105">
             <Image width={80} height={80}
-              src="/logo.png"
+              src="/escudo-blanco.jpg"
               alt="Escudo CEFF"
               className="h-full w-full object-contain"
             />

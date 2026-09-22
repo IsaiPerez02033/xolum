@@ -47,8 +47,8 @@ export default function Home() {
             {/* Marca */}
             <div className="max-w-sm">
               <div className="flex items-center justify-center gap-3 lg:justify-start">
-                <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gold ring-2 ring-white/30">
-                  <Image width={80} height={80} src="/logo.png" alt="Escudo CEFF" className="h-full w-full object-contain p-0.5" />
+                <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-white/30">
+                  <Image width={80} height={80} src="/escudo-blanco.jpg" alt="Escudo CEFF" className="h-full w-full object-contain p-0.5" />
                 </span>
                 <div className="leading-tight">
                   <p className="font-display text-base font-extrabold">
