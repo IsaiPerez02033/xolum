@@ -6,13 +6,13 @@ import { SITE, waLink, WA_MESSAGES } from "@/lib/site";
 export default function Hero() {
   return (
     <section id="inicio" className="bg-white pt-28 pb-14 sm:pt-36 sm:pb-20">
-      <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
+      <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 lg:grid-cols-[1.2fr_1fr] lg:gap-12">
         <div className="text-center sm:text-left">
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-5">
             <HeroCrest />
             <h1 className="min-w-0 font-display font-extrabold text-blue-dark">
               <span className="block text-xl font-semibold leading-snug sm:text-2xl">Centro Educativo</span>
-              <span className="mt-2 block text-[clamp(2.25rem,3.7vw,3.25rem)] leading-[1.08] text-blue">Federico<br />Froebel</span>
+              <span className="mt-2 block text-[clamp(2rem,3.2vw,2.75rem)] leading-[1.08] text-blue">Federico<br />Froebel</span>
             </h1>
           </div>
           <p className="mx-auto mt-6 max-w-lg text-base sm:mx-0 sm:text-lg leading-relaxed text-muted">Preescolar, primaria y secundaria en Teoloyucan. {SITE.tagline}</p>
